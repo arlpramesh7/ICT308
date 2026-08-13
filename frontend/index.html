@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>SmartDine — Iteration 1 Demo Client</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 480px; margin: 40px auto; background: #faf6f2; color: #2b2b2b; }
+  h1 { color: #c0392b; font-size: 1.4rem; }
+  section { background: white; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+  input, select, button { width: 100%; padding: 8px; margin: 4px 0; box-sizing: border-box; border-radius: 6px; border: 1px solid #ddd; }
+  button { background: #c0392b; color: white; border: none; cursor: pointer; font-weight: 600; }
+  button:hover { background: #a93226; }
+  .card { border: 1px solid #eee; border-radius: 8px; padding: 10px; margin-top: 8px; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; color: white; }
+  .in { background: #27ae60; }
+  .out { background: #999; }
+  pre { white-space: pre-wrap; font-size: 0.8rem; background: #f4f4f4; padding: 8px; border-radius: 6px; }
+  small { color: #777; }
+</style>
+</head>
+<body>
+<h1>🍽 SmartDine — Customer App (Iteration 1 demo)</h1>
+
+<section>
+  <h3>1. Account</h3>
+  <input id="email" placeholder="Email" value="pramesh@test.com" />
+  <input id="password" type="password" placeholder="Password" value="pass1234" />
+  <button onclick="register()">Register</button>
+  <button onclick="login()">Login</button>
+  <div id="authStatus"><small>Not logged in</small></div>
+</section>
+
+<section>
+  <h3>2. Preferences (FR2)</h3>
+  <select id="cuisine">
+    <option>Indian</option><option>Italian</option><option>Thai</option><option>Chinese</option>
+  </select>
+  <select id="price">
+    <option>$</option><option selected>$$</option><option>$$$</option>
+  </select>
+  <input id="radius" type="number" value="2" step="0.5" placeholder="Discovery radius (km)" />
+  <button onclick="savePrefs()">Save preferences</button>
+</section>
+
+<section>
+  <h3>3. Simulate GPS location (FR3/FR4)</h3>
+  <small>The Spice Tailor is at -33.8672, 151.2085 (Sydney CBD)</small>
+  <input id="lat" value="-33.8673" placeholder="Latitude" />
+  <input id="lng" value="151.2086" placeholder="Longitude" />
+  <button onclick="updateLocation()">Send location update</button>
+  <div id="results"></div>
+</section>
+
+<section>
+  <h3>Raw API response</h3>
+  <pre id="raw">—</pre>
+</section>
+
+<script>
+const API = 'http://localhost:4000/api';
+let token = null;
+
+async function register() {
+  const res = await fetch(`${API}/auth/register`, {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ username: 'demo_' + Date.now(), email: email.value, password: password.value })
+  });
+  const data = await res.json();
+  raw.textContent = JSON.stringify(data, null, 2);
+  if (data.token) { token = data.token; authStatus.innerHTML = `Logged in as <b>${data.username}</b>`; }
+}
+
+async function login() {
+  const res = await fetch(`${API}/auth/login`, {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ email: email.value, password: password.value })
+  });
+  const data = await res.json();
+  raw.textContent = JSON.stringify(data, null, 2);
+  if (data.token) { token = data.token; authStatus.innerHTML = `Logged in as <b>${data.username}</b>`; }
+}
+
+async function savePrefs() {
+  const res = await fetch(`${API}/preferences`, {
+    method: 'PUT', headers: {'Content-Type':'application/json', 'Authorization': `Bearer ${token}`},
+    body: JSON.stringify({ cuisine_type: cuisine.value, price_range: price.value, radius_km: parseFloat(radius.value) })
+  });
+  raw.textContent = JSON.stringify(await res.json(), null, 2);
+}
+
+async function updateLocation() {
+  const res = await fetch(`${API}/location/update`, {
+    method: 'POST', headers: {'Content-Type':'application/json', 'Authorization': `Bearer ${token}`},
+    body: JSON.stringify({ latitude: parseFloat(lat.value), longitude: parseFloat(lng.value) })
+  });
+  const data = await res.json();
+  raw.textContent = JSON.stringify(data, null, 2);
+  results.innerHTML = (data.recommendations || []).map(r => `
+    <div class="card">
+      <b>${r.name}</b> — ${r.distance_metres}m away
+      <span class="badge ${r.within_geofence ? 'in' : 'out'}">${r.within_geofence ? 'In geofence' : 'Outside geofence'}</span>
+      <div>Score: ${r.recommendation_score ?? '—'}</div>
+      ${r.notification ? `<div>🔔 ${r.notification.message}</div>` : ''}
+    </div>
+  `).join('');
+}
+</script>
+</body>
+</html>
