@@ -2,107 +2,544 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>SmartDine — Iteration 1 Demo Client</title>
 <style>
-  body { font-family: system-ui, sans-serif; max-width: 480px; margin: 40px auto; background: #faf6f2; color: #2b2b2b; }
-  h1 { color: #c0392b; font-size: 1.4rem; }
-  section { background: white; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
-  input, select, button { width: 100%; padding: 8px; margin: 4px 0; box-sizing: border-box; border-radius: 6px; border: 1px solid #ddd; }
-  button { background: #c0392b; color: white; border: none; cursor: pointer; font-weight: 600; }
-  button:hover { background: #a93226; }
-  .card { border: 1px solid #eee; border-radius: 8px; padding: 10px; margin-top: 8px; }
-  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; color: white; }
-  .in { background: #27ae60; }
-  .out { background: #999; }
-  pre { white-space: pre-wrap; font-size: 0.8rem; background: #f4f4f4; padding: 8px; border-radius: 6px; }
-  small { color: #777; }
+  :root {
+    --bg: #faf6f2;
+    --card: #ffffff;
+    --ink: #2b2b2b;
+    --muted: #7a736e;
+    --line: #e8e0d9;
+    --brand: #c0392b;
+    --brand-dark: #a93226;
+    --good: #1e7a4d;
+    --warn: #9a5b13;
+    --bad: #8c2f39;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    max-width: 560px; margin: 0 auto; padding: 24px 16px 64px;
+    background: var(--bg); color: var(--ink); line-height: 1.5;
+  }
+  header { margin-bottom: 20px; }
+  h1 { color: var(--brand); font-size: 1.5rem; margin: 0 0 4px; }
+  header p { margin: 0; color: var(--muted); font-size: 0.88rem; }
+
+  section {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 16px; margin-bottom: 14px;
+  }
+  h2 {
+    font-size: 0.95rem; margin: 0 0 12px; display: flex;
+    justify-content: space-between; align-items: baseline; gap: 8px;
+  }
+  h2 .fr {
+    font-size: 0.68rem; font-weight: 600; letter-spacing: 0.06em;
+    color: var(--brand); background: #fbeceb; padding: 2px 7px; border-radius: 4px;
+  }
+
+  label { display: block; font-size: 0.78rem; color: var(--muted); margin: 10px 0 3px; }
+  input, select, button, textarea {
+    width: 100%; padding: 9px 10px; border-radius: 7px;
+    border: 1px solid var(--line); font-family: inherit; font-size: 0.92rem;
+    background: #fff; color: var(--ink);
+  }
+  .row { display: flex; gap: 8px; }
+  .row > * { flex: 1; }
+  button {
+    background: var(--brand); color: #fff; border: none; cursor: pointer;
+    font-weight: 600; margin-top: 12px;
+  }
+  button:hover { background: var(--brand-dark); }
+  button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+  button.ghost {
+    background: #fff; color: var(--brand); border: 1px solid var(--brand);
+    margin-top: 6px; font-size: 0.82rem; padding: 6px 10px;
+  }
+  button.ghost:hover, a.linkbtn:hover { background: #fbeceb; }
+  a.linkbtn {
+    display: block; text-align: center; text-decoration: none;
+    background: #fff; color: var(--brand); border: 1px solid var(--brand);
+    border-radius: 7px; padding: 6px 10px; margin-top: 6px;
+    font-size: 0.82rem; font-weight: 600;
+  }
+
+  .presets { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+  .presets button { margin-top: 0; flex: 1 1 auto; font-size: 0.76rem; padding: 6px 8px; }
+
+  .status {
+    font-size: 0.82rem; padding: 8px 10px; border-radius: 6px; margin-top: 10px;
+    background: #f2efec; color: var(--muted);
+  }
+  .status.ok  { background: #e6f4ec; color: var(--good); }
+  .status.err { background: #fbeaec; color: var(--bad); }
+
+  .card { border: 1px solid var(--line); border-radius: 9px; padding: 12px; margin-top: 10px; }
+  .card.top { border-color: var(--brand); border-width: 2px; }
+  .card h3 { margin: 0; font-size: 1rem; display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+  .meta { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
+
+  .score { font-variant-numeric: tabular-nums; font-weight: 700; color: var(--brand); }
+  .bar { height: 6px; background: #f0eae5; border-radius: 3px; margin-top: 8px; overflow: hidden; }
+  .bar > span { display: block; height: 100%; background: var(--brand); }
+
+  .badge {
+    display: inline-block; padding: 2px 7px; border-radius: 10px;
+    font-size: 0.7rem; font-weight: 600; color: #fff;
+  }
+  .badge.in  { background: var(--good); }
+  .badge.out { background: #8a8079; }
+  .promo { font-size: 0.82rem; color: var(--warn); margin-top: 6px; }
+
+  .breakdown { margin-top: 8px; font-size: 0.75rem; color: var(--muted); }
+  .breakdown table { width: 100%; border-collapse: collapse; }
+  .breakdown td { padding: 2px 0; }
+  .breakdown td:last-child { text-align: right; font-variant-numeric: tabular-nums; color: var(--ink); }
+  details > summary { cursor: pointer; font-size: 0.78rem; color: var(--brand); margin-top: 8px; }
+
+  .excluded {
+    margin-top: 12px; padding: 10px; border-radius: 8px;
+    background: #fbeaec; font-size: 0.8rem; color: var(--bad);
+  }
+  .excluded b { display: block; margin-bottom: 4px; }
+
+  .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; }
+  .metric { background: #f7f3f0; border-radius: 8px; padding: 10px; }
+  .metric .n { font-size: 1.3rem; font-weight: 700; font-variant-numeric: tabular-nums; display: block; }
+  .metric .l { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+
+  .notif { border-left: 3px solid var(--brand); padding: 6px 10px; margin-top: 8px; font-size: 0.84rem; background: #fbf7f5; }
+  .notif small { display: block; color: var(--muted); font-size: 0.72rem; }
+
+  pre {
+    white-space: pre-wrap; word-break: break-word; font-size: 0.72rem;
+    background: #2b2b2b; color: #d8f0dd; padding: 10px; border-radius: 7px;
+    max-height: 260px; overflow-y: auto; margin: 0;
+  }
+  .hint { font-size: 0.76rem; color: var(--muted); margin: 4px 0 0; }
 </style>
 </head>
 <body>
-<h1>🍽 SmartDine — Customer App (Iteration 1 demo)</h1>
 
+<header>
+  <h1>SmartDine</h1>
+  <p>Iteration 1 demo client — pilot venue: The Spice Tailor, Sydney CBD</p>
+</header>
+
+<!-- ============ 1. ACCOUNT (FR1) ============ -->
 <section>
-  <h3>1. Account</h3>
-  <input id="email" placeholder="Email" value="pramesh@test.com" />
-  <input id="password" type="password" placeholder="Password" value="pass1234" />
-  <button onclick="register()">Register</button>
-  <button onclick="login()">Login</button>
-  <div id="authStatus"><small>Not logged in</small></div>
+  <h2>1. Account <span class="fr">FR1</span></h2>
+  <label for="username">Username</label>
+  <input id="username" value="prajwal" />
+  <label for="email">Email</label>
+  <input id="email" value="prajwal@smartdine.test" />
+  <label for="password">Password (8 characters minimum)</label>
+  <input id="password" type="password" value="SmartDine2026" />
+  <label for="role">Register as</label>
+  <select id="role">
+    <option value="customer">Customer</option>
+    <option value="owner">Restaurant owner (needed for the analytics dashboard)</option>
+    <option value="staff">Restaurant staff</option>
+  </select>
+  <div class="row">
+    <button onclick="register()">Register</button>
+    <button onclick="login()">Login</button>
+  </div>
+  <div id="authStatus" class="status">Not logged in</div>
 </section>
 
+<!-- ============ 2. PREFERENCES (FR2) ============ -->
 <section>
-  <h3>2. Preferences (FR2)</h3>
+  <h2>2. Dining preferences <span class="fr">FR2</span></h2>
+  <label for="cuisine">Preferred cuisine</label>
   <select id="cuisine">
-    <option>Indian</option><option>Italian</option><option>Thai</option><option>Chinese</option>
+    <option>Indian</option><option>Japanese</option><option>Italian</option>
+    <option>Vegetarian</option><option>Korean</option><option>Steak</option>
   </select>
-  <select id="price">
-    <option>$</option><option selected>$$</option><option>$$$</option>
+  <label for="dietary">Dietary requirement</label>
+  <select id="dietary">
+    <option value="">None</option>
+    <option value="vegetarian">Vegetarian</option>
+    <option value="vegan">Vegan</option>
+    <option value="halal">Halal</option>
   </select>
-  <input id="radius" type="number" value="2" step="0.5" placeholder="Discovery radius (km)" />
+  <p class="hint">Choosing vegetarian or vegan removes venues that cannot cater for it, rather than
+    ranking them lower. Set it and re-run section 3 to see the exclusions.</p>
+  <div class="row">
+    <div>
+      <label for="price">Price range</label>
+      <select id="price">
+        <option>$</option><option selected>$$</option><option>$$$</option><option>$$$$</option>
+      </select>
+    </div>
+    <div>
+      <label for="radius">Discovery radius (km)</label>
+      <input id="radius" type="number" value="2" step="0.5" min="0.1" max="50" />
+    </div>
+  </div>
   <button onclick="savePrefs()">Save preferences</button>
+  <div id="prefStatus" class="status">Not saved yet</div>
 </section>
 
+<!-- ============ 3. LOCATION (FR3, FR4, FR5, FR6, FR7) ============ -->
 <section>
-  <h3>3. Simulate GPS location (FR3/FR4)</h3>
-  <small>The Spice Tailor is at -33.8672, 151.2085 (Sydney CBD)</small>
-  <input id="lat" value="-33.8673" placeholder="Latitude" />
-  <input id="lng" value="151.2086" placeholder="Longitude" />
+  <h2>3. Location and recommendations <span class="fr">FR3–FR7</span></h2>
+  <div class="row">
+    <div>
+      <label for="lat">Latitude</label>
+      <input id="lat" value="-33.8673" />
+    </div>
+    <div>
+      <label for="lng">Longitude</label>
+      <input id="lng" value="151.2086" />
+    </div>
+  </div>
+  <div class="presets">
+    <button class="ghost" onclick="setLocation(-33.8673,151.2086,'At The Spice Tailor')">At the venue</button>
+    <button class="ghost" onclick="setLocation(-33.8688,151.2093,'Town Hall')">Town Hall</button>
+    <button class="ghost" onclick="setLocation(-33.8587,151.2095,'Circular Quay')">Circular Quay</button>
+    <button class="ghost" onclick="useRealGps()">Use my real GPS</button>
+  </div>
   <button onclick="updateLocation()">Send location update</button>
+  <div id="locStatus" class="status">No location sent yet</div>
   <div id="results"></div>
+  <div id="excluded"></div>
 </section>
 
+<!-- ============ 4. NOTIFICATIONS (FR7) ============ -->
 <section>
-  <h3>Raw API response</h3>
-  <pre id="raw">—</pre>
+  <h2>4. Notifications <span class="fr">FR7</span></h2>
+  <p class="hint">Fired when you enter a venue's geofence while it is running a promotion.
+    Suppressed for 30 minutes per venue so repeated pings do not spam you.</p>
+  <button class="ghost" onclick="loadNotifications()">Refresh notifications</button>
+  <div id="notifications"></div>
+</section>
+
+<!-- ============ 5. OWNER ANALYTICS (FR10) ============ -->
+<section>
+  <h2>5. Owner analytics <span class="fr">FR10</span></h2>
+  <p class="hint">Restricted to the staff and owner roles. Register an owner account in section 1
+    to view it — a customer account receives 403 Forbidden, which demonstrates the access control.</p>
+  <label for="analyticsId">Restaurant</label>
+  <select id="analyticsId">
+    <option value="1">1 — The Spice Tailor</option>
+    <option value="2">2 — Nikkei Bar</option>
+    <option value="3">3 — Trattoria Bianco</option>
+    <option value="4">4 — Green Fork</option>
+    <option value="5">5 — Chophouse</option>
+    <option value="6">6 — Seoul Grill</option>
+  </select>
+  <button onclick="loadAnalytics()">Load dashboard</button>
+  <div id="analyticsStatus" class="status">Not loaded</div>
+  <div id="analytics"></div>
+</section>
+
+<!-- ============ 6. RAW RESPONSE ============ -->
+<section>
+  <h2>Raw API response</h2>
+  <pre id="raw">Waiting for a request…</pre>
 </section>
 
 <script>
 const API = 'http://localhost:4000/api';
 let token = null;
+let currentRole = null;
+
+/* ---------------- helpers ---------------- */
+
+/** Show a message in one of the small status strips. */
+function setStatus(el, message, kind) {
+  el.className = 'status' + (kind ? ' ' + kind : '');
+  el.textContent = message;
+}
+
+/**
+ * Pull a readable message out of an API error response.
+ * The backend returns two shapes: express-validator sends
+ * { errors: [{ msg, path }] }, and our own handlers send { error: "..." }.
+ */
+function errorMessage(data, res) {
+  if (data && Array.isArray(data.errors) && data.errors.length) {
+    return data.errors.map(e => `${e.path}: ${e.msg}`).join('; ');
+  }
+  if (data && data.error) return data.error;
+  return `Request failed with status ${res.status}`;
+}
+
+/**
+ * Single place where every request to the API is made, so authentication,
+ * JSON handling and error reporting are consistent across the whole client
+ * instead of being repeated in each function.
+ */
+async function api(path, { method = 'GET', body = null, auth = true } = {}) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (auth && token) headers['Authorization'] = `Bearer ${token}`;
+
+  let res, data;
+  try {
+    res = await fetch(API + path, {
+      method, headers, body: body ? JSON.stringify(body) : undefined,
+    });
+  } catch (networkError) {
+    raw.textContent = String(networkError);
+    throw new Error('Cannot reach the API. Is the backend running on port 4000?');
+  }
+
+  try { data = await res.json(); } catch { data = null; }
+  raw.textContent = JSON.stringify(data, null, 2);
+
+  if (!res.ok) throw new Error(errorMessage(data, res));
+  return data;
+}
+
+function requireLogin(statusEl) {
+  if (token) return true;
+  setStatus(statusEl, 'Log in first — section 1.', 'err');
+  return false;
+}
+
+/* ---------------- FR1: authentication ---------------- */
 
 async function register() {
-  const res = await fetch(`${API}/auth/register`, {
-    method: 'POST', headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({ username: 'demo_' + Date.now(), email: email.value, password: password.value })
-  });
-  const data = await res.json();
-  raw.textContent = JSON.stringify(data, null, 2);
-  if (data.token) { token = data.token; authStatus.innerHTML = `Logged in as <b>${data.username}</b>`; }
+  try {
+    const data = await api('/auth/register', {
+      auth: false,
+      method: 'POST',
+      body: {
+        username: username.value.trim(),
+        email: email.value.trim(),
+        password: password.value,
+        role: role.value,
+      },
+    });
+    token = data.token;
+    currentRole = data.role;
+    setStatus(authStatus, `Registered and logged in as ${data.username} (${data.role})`, 'ok');
+  } catch (e) {
+    setStatus(authStatus, e.message, 'err');
+  }
 }
 
 async function login() {
-  const res = await fetch(`${API}/auth/login`, {
-    method: 'POST', headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({ email: email.value, password: password.value })
-  });
-  const data = await res.json();
-  raw.textContent = JSON.stringify(data, null, 2);
-  if (data.token) { token = data.token; authStatus.innerHTML = `Logged in as <b>${data.username}</b>`; }
+  try {
+    const data = await api('/auth/login', {
+      auth: false,
+      method: 'POST',
+      body: { email: email.value.trim(), password: password.value },
+    });
+    token = data.token;
+    currentRole = data.role;
+    setStatus(authStatus, `Logged in as ${data.username} (${data.role})`, 'ok');
+  } catch (e) {
+    setStatus(authStatus, e.message, 'err');
+  }
 }
 
+/* ---------------- FR2: preferences ---------------- */
+
 async function savePrefs() {
-  const res = await fetch(`${API}/preferences`, {
-    method: 'PUT', headers: {'Content-Type':'application/json', 'Authorization': `Bearer ${token}`},
-    body: JSON.stringify({ cuisine_type: cuisine.value, price_range: price.value, radius_km: parseFloat(radius.value) })
-  });
-  raw.textContent = JSON.stringify(await res.json(), null, 2);
+  if (!requireLogin(prefStatus)) return;
+  try {
+    // Build the payload with only the fields the user actually set.
+    //
+    // An empty dietary selection is OMITTED rather than sent as null. The API's
+    // validators mark these fields .optional(), and express-validator treats
+    // only `undefined` as absent by default -- an explicit null is validated
+    // and rejected as "Invalid value". Leaving the key out sends undefined,
+    // which every version of the validator accepts.
+    const payload = {
+      cuisine_type: cuisine.value,
+      price_range: price.value,
+      radius_km: parseFloat(radius.value),
+    };
+    if (dietary.value) payload.dietary_req = dietary.value;
+
+    const data = await api('/preferences', { method: 'PUT', body: payload });
+    const diet = data.dietary_req ? `, ${data.dietary_req}` : '';
+    setStatus(prefStatus, `Saved: ${data.cuisine_type}, ${data.price_range}${diet}, ${data.radius_km} km`, 'ok');
+  } catch (e) {
+    setStatus(prefStatus, e.message, 'err');
+  }
+}
+
+/* ---------------- FR3: location ---------------- */
+
+function setLocation(latitude, longitude, label) {
+  lat.value = latitude;
+  lng.value = longitude;
+  setStatus(locStatus, `Location set to ${label}. Now send the location update.`);
+}
+
+/** Use the browser's real geolocation, demonstrating FR3 outside the simulator. */
+function useRealGps() {
+  if (!navigator.geolocation) {
+    setStatus(locStatus, 'This browser does not support geolocation.', 'err');
+    return;
+  }
+  setStatus(locStatus, 'Requesting your location…');
+  navigator.geolocation.getCurrentPosition(
+    pos => setLocation(pos.coords.latitude.toFixed(5), pos.coords.longitude.toFixed(5), 'your real position'),
+    err => setStatus(locStatus, `Location unavailable: ${err.message}`, 'err'),
+  );
+}
+
+/* ---------------- FR4, FR5, FR6, FR7: the main flow ---------------- */
+
+const TERM_LABELS = {
+  proximity: 'Proximity', cuisine: 'Cuisine match', dietary: 'Dietary fit',
+  price: 'Price band', rating: 'Customer rating', promotion: 'Active promotion',
+};
+
+function breakdownTable(breakdown) {
+  if (!breakdown) return '';
+  const rows = Object.entries(breakdown)
+    .map(([k, v]) => `<tr><td>${TERM_LABELS[k] || k}</td><td>${v}</td></tr>`).join('');
+  return `<details><summary>Why this score?</summary>
+    <div class="breakdown"><table>${rows}</table></div></details>`;
+}
+
+function renderRecommendation(r, index) {
+  const stars = r.average_rating ? `★ ${r.average_rating}` : 'no ratings yet';
+  return `
+    <div class="card ${index === 0 ? 'top' : ''}">
+      <h3>
+        <span>${r.name}</span>
+        <span class="score">${r.recommendation_score ?? '—'}</span>
+      </h3>
+      <div class="meta">
+        ${r.cuisine_type} · ${r.price_range} · ${r.distance_metres} m ·
+        ${r.walk_minutes} min walk · ${stars}
+      </div>
+      <div class="bar"><span style="width:${r.recommendation_score ?? 0}%"></span></div>
+      <div style="margin-top:8px">
+        <span class="badge ${r.within_geofence ? 'in' : 'out'}">
+          ${r.within_geofence ? 'Inside geofence' : 'Outside geofence'}
+        </span>
+      </div>
+      ${r.promotion ? `<div class="promo">Offer: ${r.promotion}</div>` : ''}
+      ${r.notification ? `<div class="promo">Notification sent: ${r.notification.message}</div>` : ''}
+      ${breakdownTable(r.score_breakdown)}
+      <button class="ghost" onclick="openVenue(${r.restaurant_id})">I'm interested</button>
+      <a class="ghost linkbtn" href="${r.directions.maps_url}" target="_blank" rel="noopener">Walking directions</a>
+      <div class="row" style="margin-top:8px">
+        <select id="rating-${r.restaurant_id}">
+          <option value="5">5 — excellent</option><option value="4">4 — good</option>
+          <option value="3" selected>3 — average</option><option value="2">2 — poor</option>
+          <option value="1">1 — bad</option>
+        </select>
+        <button class="ghost" onclick="submitRating(${r.restaurant_id})">Rate</button>
+      </div>
+      <div id="rate-status-${r.restaurant_id}"></div>
+    </div>`;
 }
 
 async function updateLocation() {
-  const res = await fetch(`${API}/location/update`, {
-    method: 'POST', headers: {'Content-Type':'application/json', 'Authorization': `Bearer ${token}`},
-    body: JSON.stringify({ latitude: parseFloat(lat.value), longitude: parseFloat(lng.value) })
-  });
-  const data = await res.json();
-  raw.textContent = JSON.stringify(data, null, 2);
-  results.innerHTML = (data.recommendations || []).map(r => `
-    <div class="card">
-      <b>${r.name}</b> — ${r.distance_metres}m away
-      <span class="badge ${r.within_geofence ? 'in' : 'out'}">${r.within_geofence ? 'In geofence' : 'Outside geofence'}</span>
-      <div>Score: ${r.recommendation_score ?? '—'}</div>
-      ${r.notification ? `<div>🔔 ${r.notification.message}</div>` : ''}
-    </div>
-  `).join('');
+  if (!requireLogin(locStatus)) return;
+  try {
+    const data = await api('/location/update', {
+      method: 'POST',
+      body: { latitude: parseFloat(lat.value), longitude: parseFloat(lng.value) },
+    });
+
+    const list = data.recommendations || [];
+    results.innerHTML = list.map(renderRecommendation).join('');
+
+    const dropped = data.excluded_for_dietary_requirements || [];
+    excluded.innerHTML = dropped.length
+      ? `<div class="excluded"><b>Excluded — ${dropped.length} venue(s) cannot meet your dietary requirement</b>
+           ${dropped.map(d => `${d.name}: ${d.reason}`).join('<br>')}</div>`
+      : '';
+
+    setStatus(locStatus,
+      `${list.length} venue(s) ranked${dropped.length ? `, ${dropped.length} excluded on dietary grounds` : ''}.`,
+      'ok');
+    loadNotifications();
+  } catch (e) {
+    setStatus(locStatus, e.message, 'err');
+  }
+}
+
+/**
+ * FR10 support: records that the customer opened this venue, which is what
+ * turns an impression into a view and gives the owner a real engagement rate.
+ */
+async function openVenue(restaurantId) {
+  try {
+    await api(`/location/recommendations/${restaurantId}/viewed`, { method: 'POST' });
+    setStatus(locStatus, `Interest recorded for restaurant ${restaurantId}. It now counts as a view in the owner analytics.`, 'ok');
+  } catch (e) {
+    setStatus(locStatus, e.message, 'err');
+  }
+}
+
+/* ---------------- FR9: feedback ---------------- */
+
+async function submitRating(restaurantId) {
+  const statusEl = document.getElementById(`rate-status-${restaurantId}`);
+  if (!token) { setStatus(statusEl, 'Log in first.', 'err'); return; }
+  try {
+    const value = Number(document.getElementById(`rating-${restaurantId}`).value);
+    const data = await api(`/feedback/${restaurantId}`, {
+      method: 'POST',
+      body: { rating: value, comment: null },
+    });
+    setStatus(statusEl,
+      `Rated ${data.rating}/5. Venue average is now ${data.restaurant_average} across ${data.restaurant_rating_count} rating(s).`,
+      'ok');
+  } catch (e) {
+    setStatus(statusEl, e.message, 'err');
+  }
+}
+
+/* ---------------- FR7: notification feed ---------------- */
+
+async function loadNotifications() {
+  if (!token) return;
+  try {
+    const list = await api('/location/notifications');
+    notifications.innerHTML = list.length
+      ? list.map(n => `<div class="notif">${n.message}
+          <small>${n.restaurant_name} · ${n.sent_at} · ${n.is_read ? 'read' : 'unread'}</small></div>`).join('')
+      : '<p class="hint">No notifications yet. Move inside a venue geofence while it is running a promotion.</p>';
+  } catch (e) {
+    notifications.innerHTML = `<div class="status err">${e.message}</div>`;
+  }
+}
+
+/* ---------------- FR10: owner analytics ---------------- */
+
+async function loadAnalytics() {
+  if (!requireLogin(analyticsStatus)) return;
+  try {
+    const d = await api(`/analytics/restaurants/${analyticsId.value}`);
+    const m = d.metrics;
+    analytics.innerHTML = `
+      <div class="metrics">
+        <div class="metric"><span class="n">${m.impressions}</span><span class="l">Impressions</span></div>
+        <div class="metric"><span class="n">${m.views}</span><span class="l">Views</span></div>
+        <div class="metric"><span class="n">${(m.engagement_rate * 100).toFixed(0)}%</span><span class="l">Engagement</span></div>
+        <div class="metric"><span class="n">${m.unique_users}</span><span class="l">Unique users</span></div>
+        <div class="metric"><span class="n">${m.average_rating ?? '—'}</span><span class="l">Avg rating</span></div>
+        <div class="metric"><span class="n">${m.rating_count}</span><span class="l">Ratings</span></div>
+        <div class="metric"><span class="n">${m.average_relevance_score}</span><span class="l">Avg score</span></div>
+        <div class="metric"><span class="n">${m.notifications_sent}</span><span class="l">Notifications</span></div>
+      </div>
+      ${d.recent_feedback.length ? `<div style="margin-top:12px">
+        <b style="font-size:0.85rem">Recent feedback</b>
+        ${d.recent_feedback.map(f => `<div class="notif">★ ${f.rating} — ${f.comment || 'no comment'}
+          <small>${f.username} · ${f.submitted_at}</small></div>`).join('')}
+      </div>` : ''}`;
+    setStatus(analyticsStatus, `Dashboard loaded for ${d.restaurant.name}.`, 'ok');
+  } catch (e) {
+    analytics.innerHTML = '';
+    setStatus(analyticsStatus,
+      e.message.includes('permission') || e.message.includes('Insufficient')
+        ? `${e.message} — this is the role check working. Register an owner account in section 1.`
+        : e.message,
+      'err');
+  }
 }
 </script>
 </body>
