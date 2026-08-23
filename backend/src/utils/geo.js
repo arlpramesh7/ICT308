@@ -1,4 +1,19 @@
+/**
+ * Geospatial helpers.
+ *
+ * This module deliberately contains only distance mathematics. The
+ * recommendation scoring that previously lived here moved to
+ * src/services/scoringService.js during Iteration 1, so that geometry and
+ * business policy are not mixed in one file: distance is a fact about the
+ * world, whereas how much proximity should matter relative to cuisine or
+ * rating is a product decision that changes independently and needs its own
+ * tests.
+ */
+
 // Haversine formula: great-circle distance between two lat/lng points, in metres.
+// At Sydney CBD scale the error from modelling the Earth as a sphere rather
+// than an ellipsoid is well under a metre, so Vincenty's formulae are not
+// justified here.
 function distanceMetres(lat1, lon1, lat2, lon2) {
   const R = 6371000;
   const toRad = (deg) => (deg * Math.PI) / 180;
@@ -11,28 +26,14 @@ function distanceMetres(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
-// Recommendation score: closer distance + matching preferences = higher score (0-100).
-// Weighting: 60% proximity, 25% cuisine match, 15% price match. Implements FR5,
-// prioritised per the requirements analysis (proximity + preferences drive recommendations).
-function scoreRestaurant(distance, radiusKm, restaurant, preference) {
-  const maxDistance = radiusKm * 1000;
-  const proximityScore = Math.max(0, 1 - distance / maxDistance) * 60;
-
-  let cuisineScore = 0;
-  if (preference?.cuisine_type && restaurant.cuisine_type) {
-    cuisineScore = preference.cuisine_type.toLowerCase() === restaurant.cuisine_type.toLowerCase() ? 25 : 5;
-  } else {
-    cuisineScore = 15; // no preference set — neutral score
-  }
-
-  let priceScore = 0;
-  if (preference?.price_range && restaurant.price_range) {
-    priceScore = preference.price_range === restaurant.price_range ? 15 : 5;
-  } else {
-    priceScore = 10;
-  }
-
-  return Math.round(proximityScore + cuisineScore + priceScore);
+/** Geofence test (FR4): is the position inside the venue's trigger radius? */
+function isWithinGeofence(lat, lon, restaurant) {
+  return distanceMetres(lat, lon, restaurant.latitude, restaurant.longitude) <= restaurant.geofence_radius;
 }
 
-module.exports = { distanceMetres, scoreRestaurant };
+/** Estimated walking time in minutes at 5 km/h. */
+function walkingMinutes(distance) {
+  return Math.max(1, Math.round(distance / (5000 / 60)));
+}
+
+module.exports = { distanceMetres, isWithinGeofence, walkingMinutes };

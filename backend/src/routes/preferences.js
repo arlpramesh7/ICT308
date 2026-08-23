@@ -10,10 +10,15 @@ router.put(
   '/',
   requireAuth,
   [
-    body('cuisine_type').optional().isString(),
-    body('dietary_req').optional().isString(),
-    body('price_range').optional().isString(),
-    body('radius_km').optional().isFloat({ min: 0.1, max: 50 }),
+    // express-validator's .optional() treats only `undefined` as absent by
+    // default, so an explicit null -- which the client sends when the user
+    // clears a preference -- was rejected with "Invalid value" even though the
+    // handler below already coerces null correctly. { values: 'null' } makes
+    // both undefined and null acceptable, so a preference can be cleared.
+    body('cuisine_type').optional({ values: 'null' }).isString(),
+    body('dietary_req').optional({ values: 'null' }).isString(),
+    body('price_range').optional({ values: 'null' }).isString(),
+    body('radius_km').optional({ values: 'null' }).isFloat({ min: 0.1, max: 50 }),
   ],
   (req, res) => {
     const errors = validationResult(req);
