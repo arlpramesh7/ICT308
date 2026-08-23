@@ -6,6 +6,8 @@ const authRoutes = require('./routes/auth');
 const preferenceRoutes = require('./routes/preferences');
 const locationRoutes = require('./routes/location');
 const restaurantRoutes = require('./routes/restaurants');
+const feedbackRoutes = require('./routes/feedback');
+const analyticsRoutes = require('./routes/analytics');
 
 const app = express();
 app.use(cors());
@@ -17,6 +19,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/preferences', preferenceRoutes);
 app.use('/api/location', locationRoutes);
 app.use('/api/restaurants', restaurantRoutes);
+app.use('/api/feedback', feedbackRoutes);      // FR9
+app.use('/api/analytics', analyticsRoutes);    // FR10
 
 app.use((err, req, res, next) => {
   console.error(err);
