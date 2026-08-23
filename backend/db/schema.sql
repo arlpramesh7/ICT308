@@ -30,7 +30,13 @@ CREATE TABLE IF NOT EXISTS restaurant (
     geofence_radius  INTEGER NOT NULL DEFAULT 200, -- metres
     cuisine_type     TEXT,
     price_range      TEXT,
-    is_active        INTEGER NOT NULL DEFAULT 1
+    is_active        INTEGER NOT NULL DEFAULT 1,
+    -- Added in Iteration 1 to support the dietary hard-exclusion rule (FR2/FR5)
+    -- and staff promotion management (FR8). src/db.js migrates existing
+    -- database files that predate these columns.
+    vegetarian_friendly INTEGER NOT NULL DEFAULT 0,
+    promotion_text      TEXT,
+    promotion_active    INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS menu_item (
