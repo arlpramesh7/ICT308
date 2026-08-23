@@ -171,3 +171,4 @@ The API runs on `http://localhost:4000`. Health check: `GET /api/health`.
 - SD-6 Implement staff menu management (FR8)
 - SD-7 Write Iteration 1 technical report
 - SD-8 Record prototype demo video
+Updated project documentation and iteration requirements.
