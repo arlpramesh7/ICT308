@@ -1,11 +1,12 @@
 {
   "name": "smartdine-backend",
   "version": "1.0.0",
-  "description": "SmartDine Iteration 1 API \u2014 ICT308 Assessment 1",
+  "description": "SmartDine Iteration 1 API - ICT308 Assessment 1",
   "main": "index.js",
   "scripts": {
     "start": "node src/app.js",
-    "start:legacy-node": "node --experimental-sqlite src/app.js"
+    "start:legacy-node": "node --experimental-sqlite src/app.js",
+    "test": "node --test \"tests/**/*.test.js\""
   },
   "keywords": [],
   "author": "",
