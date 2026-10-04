@@ -1,0 +1,14 @@
+{
+  "name": "smartdine",
+  "version": "2.0.0",
+  "private": true,
+  "description": "SmartDine final project delivery",
+  "engines": { "node": ">=24.0.0" },
+  "scripts": {
+    "postinstall": "npm ci --prefix backend",
+    "setup": "node backend/scripts/setup.js",
+    "start": "node backend/src/app.js",
+    "test": "npm test --prefix backend",
+    "test:performance": "node backend/scripts/performance.js"
+  }
+}

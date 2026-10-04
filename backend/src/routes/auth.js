@@ -1,69 +1,55 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const { body, validationResult } = require('express-validator');
+const { body } = require('express-validator');
 const db = require('../db');
-const { JWT_SECRET } = require('../middleware/auth');
-
+const { validate } = require('../middleware/validation');
+const { requireAuth, issueSession } = require('../middleware/auth');
 const router = express.Router();
-const SALT_ROUNDS = 12; // matches "Bcrypt password hashing (cost factor 12)" in the security design
+const emailRule = () => body('email').isString().trim().isEmail().isLength({ max: 254 }).toLowerCase();
+const publicUser = user => ({ user_id: user.user_id, username: user.username, email: user.email, role: user.role });
 
-// FR1: Users must be able to register and log into the system
-router.post(
-  '/register',
-  [
-    body('username').isString().trim().isLength({ min: 3 }),
-    body('email').isEmail(),
-    body('password').isString().isLength({ min: 8 }),
-    body('role').optional().isIn(['customer', 'staff', 'owner']),
-  ],
-  (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
-
-    const { username, email, password, role } = req.body;
-    const existing = db.prepare('SELECT user_id FROM user WHERE email = ? OR username = ?').get(email, username);
-    if (existing) return res.status(409).json({ error: 'Username or email already registered' });
-
-    const passwordHash = bcrypt.hashSync(password, SALT_ROUNDS);
-    const info = db
-      .prepare('INSERT INTO user (username, email, password_hash, role) VALUES (?, ?, ?, ?)')
-      .run(username, email, passwordHash, role || 'customer');
-
-    const token = jwt.sign({ user_id: info.lastInsertRowid, role: role || 'customer' }, JWT_SECRET, {
-      expiresIn: '1h', // matches "JWT-based authentication with token expiry (1 hour)"
-    });
-
-    res.status(201).json({ token, user_id: info.lastInsertRowid, username, role: role || 'customer' });
+router.post('/register', [
+  body('username').isString().trim().isLength({ min: 3, max: 50 }), emailRule(),
+  body('password').isString().isLength({ min: 10, max: 72 }).custom(v => Buffer.byteLength(v) <= 72).withMessage('Use a password of 10 to 72 bytes.'),
+  body('role').optional().equals('customer').withMessage('Staff accounts must be provisioned by an administrator.'),
+  body('privacy_accepted').custom(v => v === true).withMessage('Please acknowledge the privacy notice.'),
+], validate, async (req, res) => {
+  const { username, email, password } = req.body;
+  if (db.prepare('SELECT 1 FROM user WHERE email = ? COLLATE NOCASE OR username = ?').get(email, username)) return res.status(409).json({ error: 'Username or email already registered.' });
+  const hash = await bcrypt.hash(password, 12);
+  try {
+    const info = db.prepare("INSERT INTO user (username, email, password_hash, role, privacy_accepted_at) VALUES (?, ?, ?, 'customer', datetime('now'))").run(username, email, hash);
+    const user = db.prepare('SELECT * FROM user WHERE user_id = ?').get(info.lastInsertRowid);
+    res.status(201).json({ ...publicUser(user), token: issueSession(res, user) });
+  } catch (err) {
+    if (err.message.includes('UNIQUE')) return res.status(409).json({ error: 'Username or email already registered.' });
+    throw err;
   }
-);
+});
 
-// Track failed login attempts in-memory for the prototype (per-email lockout after 5 attempts)
-const failedAttempts = new Map();
-
-router.post(
-  '/login',
-  [body('email').isEmail(), body('password').isString()],
-  (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
-
-    const { email, password } = req.body;
-    const attempts = failedAttempts.get(email) || 0;
-    if (attempts >= 5) {
-      return res.status(429).json({ error: 'Account locked after 5 failed attempts. Try again later.' });
+router.post('/login', [emailRule(), body('password').isString().isLength({ min: 1, max: 72 })], validate, async (req, res) => {
+  const user = db.prepare('SELECT * FROM user WHERE email = ? COLLATE NOCASE AND is_active = 1').get(req.body.email);
+  if (user?.locked_until && Date.parse(user.locked_until + 'Z') > Date.now()) return res.status(429).json({ error: 'Account locked. Try again in 15 minutes.' });
+  if (!user || !(await bcrypt.compare(req.body.password, user.password_hash))) {
+    if (user) {
+      db.prepare(`UPDATE user SET failed_logins = CASE WHEN locked_until IS NOT NULL AND locked_until <= datetime('now') THEN 1 ELSE failed_logins + 1 END,
+        locked_until = CASE WHEN (CASE WHEN locked_until IS NOT NULL AND locked_until <= datetime('now') THEN 1 ELSE failed_logins + 1 END) >= 5 THEN datetime('now', '+15 minutes') ELSE NULL END WHERE user_id = ?`).run(user.user_id);
     }
-
-    const user = db.prepare('SELECT * FROM user WHERE email = ? AND is_active = 1').get(email);
-    if (!user || !bcrypt.compareSync(password, user.password_hash)) {
-      failedAttempts.set(email, attempts + 1);
-      return res.status(401).json({ error: 'Invalid email or password' });
-    }
-
-    failedAttempts.delete(email);
-    const token = jwt.sign({ user_id: user.user_id, role: user.role }, JWT_SECRET, { expiresIn: '1h' });
-    res.json({ token, user_id: user.user_id, username: user.username, role: user.role });
+    return res.status(401).json({ error: 'Invalid email or password.' });
   }
-);
+  // Recheck after asynchronous bcrypt to respect concurrent lockout or account removal.
+  const fresh = db.prepare('SELECT * FROM user WHERE user_id = ? AND is_active = 1').get(user.user_id);
+  if (!fresh) return res.status(401).json({ error: 'Invalid email or password.' });
+  if (fresh.locked_until && Date.parse(fresh.locked_until + 'Z') > Date.now()) return res.status(429).json({ error: 'Account locked. Try again in 15 minutes.' });
+  db.prepare('UPDATE user SET failed_logins = 0, locked_until = NULL WHERE user_id = ?').run(user.user_id);
+  res.json({ ...publicUser(fresh), token: issueSession(res, fresh) });
+});
 
+router.get('/me', requireAuth, (req, res) => res.json(publicUser(req.user)));
+router.post('/logout', requireAuth, (req, res) => {
+  db.prepare('UPDATE user SET token_version = token_version + 1 WHERE user_id = ?').run(req.user.user_id);
+  res.clearCookie('smartdine_session', { path: '/' });
+  res.json({ ok: true });
+});
 module.exports = router;
+

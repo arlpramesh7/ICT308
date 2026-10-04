@@ -10,7 +10,7 @@
 const express = require('express');
 const { body, param, validationResult } = require('express-validator');
 const db = require('../db');
-const { requireAuth } = require('../middleware/auth');
+const { requireAuth, requireRole } = require('../middleware/auth');
 const { ratingsByRestaurant } = require('../services/analyticsService');
 
 const router = express.Router();
@@ -19,6 +19,7 @@ const router = express.Router();
 router.post(
   '/:restaurantId',
   requireAuth,
+  requireRole('customer'),
   [
     param('restaurantId').isInt({ min: 1 }),
     body('rating').isInt({ min: 1, max: 5 }).withMessage('Rating must be a whole number from 1 to 5'),
@@ -39,14 +40,22 @@ router.post(
     // preferences.js during Iteration 1).
     const comment = req.body.comment ?? null;
 
+    const existing = db.prepare('SELECT feedback_id FROM feedback WHERE user_id = ? AND restaurant_id = ? ORDER BY feedback_id DESC LIMIT 1').get(req.user.user_id, restaurantId);
+    let feedbackId;
+    if (existing) {
+      db.prepare("UPDATE feedback SET rating = ?, comment = ?, submitted_at = datetime('now') WHERE feedback_id = ?").run(Number(req.body.rating), comment, existing.feedback_id);
+      feedbackId = existing.feedback_id;
+    } else {
     const info = db
       .prepare('INSERT INTO feedback (user_id, restaurant_id, rating, comment) VALUES (?, ?, ?, ?)')
       .run(req.user.user_id, restaurantId, req.body.rating, comment);
+      feedbackId = Number(info.lastInsertRowid);
+    }
 
     const aggregate = ratingsByRestaurant().get(restaurantId);
 
-    res.status(201).json({
-      feedback_id: Number(info.lastInsertRowid),
+    res.status(existing ? 200 : 201).json({
+      feedback_id: feedbackId,
       restaurant_id: restaurantId,
       rating: req.body.rating,
       comment,
@@ -70,8 +79,8 @@ router.get('/:restaurantId', [param('restaurantId').isInt({ min: 1 })], (req, re
     rating_count: aggregate ? aggregate.count : 0,
     reviews: db
       .prepare(
-        `SELECT f.rating, f.comment, f.submitted_at, u.username
-         FROM feedback f JOIN user u ON u.user_id = f.user_id
+        `SELECT f.rating, f.comment, f.submitted_at
+         FROM current_feedback f
          WHERE f.restaurant_id = ? ORDER BY f.feedback_id DESC LIMIT 20`
       )
       .all(restaurantId),

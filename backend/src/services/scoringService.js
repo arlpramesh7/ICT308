@@ -50,7 +50,7 @@ if (TOTAL_WEIGHT !== 100) {
 }
 
 /** Dietary requirements that exclude a venue which is not vegetarian friendly. */
-const PLANT_BASED = ['vegetarian', 'vegan'];
+const { promotionActive } = require('./promotion');
 
 /**
  * Proximity term, 0..1.
@@ -90,8 +90,9 @@ function dietaryTerm(restaurant, dietaryReq) {
 
   if (requirements.length === 0) return 1;
 
-  const needsPlantBased = requirements.some((r) => PLANT_BASED.includes(r));
-  if (needsPlantBased && !restaurant.vegetarian_friendly) return null; // hard exclusion
+  if (requirements.some(r => !['vegetarian', 'vegan'].includes(r))) return null;
+  if (requirements.includes('vegan') && !restaurant.vegan_friendly) return null;
+  if (requirements.includes('vegetarian') && !restaurant.vegetarian_friendly) return null;
 
   return 1;
 }
@@ -123,7 +124,7 @@ function ratingTerm(averageRating, ratingCount) {
 
 /** Promotion term, 0 or 1 -- a small nudge for a venue running an active offer (FR7). */
 function promotionTerm(restaurant) {
-  return restaurant.promotion_active && restaurant.promotion_text ? 1 : 0;
+  return promotionActive(restaurant) ? 1 : 0;
 }
 
 /**
