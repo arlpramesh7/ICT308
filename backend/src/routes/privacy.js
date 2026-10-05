@@ -15,6 +15,7 @@ router.get('/export', (req, res) => {
     recommendations: db.prepare('SELECT restaurant_id, score, timestamp, is_viewed FROM recommendation WHERE user_id = ?').all(userId),
     notifications: db.prepare('SELECT restaurant_id, message, sent_at, is_read, push_status FROM notification WHERE user_id = ?').all(userId),
     feedback: db.prepare('SELECT restaurant_id, rating, comment, submitted_at FROM feedback WHERE user_id = ?').all(userId),
+    favourites: db.prepare('SELECT restaurant_id, saved_at FROM favourite WHERE user_id = ?').all(userId),
     push_devices: db.prepare('SELECT COUNT(*) AS count FROM push_subscription WHERE user_id = ?').get(userId).count,
     location_history: 'Precise coordinates are processed for each request and are not stored.',
   });
@@ -47,4 +48,3 @@ router.delete('/account', [body('password').isString().isLength({ max: 72 }), bo
   } catch (err) { db.exec('ROLLBACK'); throw err; }
 });
 module.exports = router;
-

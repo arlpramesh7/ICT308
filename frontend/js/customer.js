@@ -1,5 +1,7 @@
 import { $, api, guard, escape, time, toast, busy, icons } from './common.js';
 import { restaurantCard } from './catalog.js';
+import { loadFavourites } from './favourites.js';
+let favouriteRows = [];
 let coordinates = null;
 let results = [];
 const presets = {
@@ -14,15 +16,17 @@ async function notifications() {
 }
 function render() {
   const query = $('#restaurant-search').value.trim().toLowerCase();
-  const filtered = results.filter(r => (r.name + ' ' + r.cuisine_type).toLowerCase().includes(query));
+  const savedOnly = $('#saved-only').checked;
+  const filtered = (savedOnly ? favouriteRows : results).filter(r => (r.name + ' ' + r.cuisine_type).toLowerCase().includes(query));
   $('#result-count').textContent = filtered.length + ' restaurants';
-  $('#results').innerHTML = filtered.length ? filtered.map(r => restaurantCard(r, { recommendation: true })).join('') : '<p class="empty">No restaurants match your search and preferences. Try a wider radius or another area.</p>';
+  $('#results').innerHTML = filtered.length ? filtered.map(r => restaurantCard(r, { recommendation: !savedOnly })).join('') : '<p class="empty">' + (savedOnly ? 'No saved restaurants match your search.' : 'No restaurants match your search and preferences. Try a wider radius or another area.') + '</p>';
   icons();
 }
 async function discover() {
   if (!coordinates) { toast('Choose an area or use your current location.'); return; }
   $('#results').innerHTML = '<p class="empty" role="status">Finding nearby restaurants...</p>';
   try {
+    favouriteRows = await loadFavourites(user);
     const response = await api('/location/update', { method: 'POST', body: { latitude: coordinates.latitude, longitude: coordinates.longitude } });
     results = response.recommendations; render();
     const excluded = response.excluded_for_dietary_requirements;
@@ -40,6 +44,8 @@ if (user) {
     $('#location-status').textContent = 'Searching near Town Hall'; await discover();
   } catch (error) { toast(error.message, true); }
   $('#restaurant-search').addEventListener('input', render);
+  $('#saved-only').addEventListener('change', render);
+  document.addEventListener('favourites-changed', async () => { try { favouriteRows = await loadFavourites(user); if ($('#saved-only').checked) render(); } catch (error) { toast(error.message, true); } });
   $('#preferences-form').addEventListener('submit', event => {
     event.preventDefault(); busy(event.submitter, async () => {
       await api('/preferences', { method: 'PUT', body: { cuisine_type: $('#cuisine').value || null, dietary_req: $('#dietary').value || null, price_range: $('#price').value || null, radius_km: Number($('#radius').value) } });

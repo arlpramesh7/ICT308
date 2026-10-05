@@ -1,8 +1,10 @@
 import { $, api, header, icons } from './common.js';
 import { restaurantCard } from './catalog.js';
+import { loadFavourites } from './favourites.js';
 let user;
 try { user = await api('/auth/me', { redirectOn401: false }); } catch { /* Public browsing remains available without a session. */ }
 header(user);
+try { await loadFavourites(user); } catch { /* Discovery is still available when favourites cannot load. */ }
 if ($('#venue-preview')) {
   try {
     const venues = await api('/restaurants');

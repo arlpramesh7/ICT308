@@ -207,4 +207,10 @@ for (const venue of seeded) {
 }
 
 require('./catalog').enrichCatalog(db);
+db.exec(`CREATE TABLE IF NOT EXISTS favourite (
+  user_id INTEGER NOT NULL REFERENCES user(user_id) ON DELETE CASCADE,
+  restaurant_id INTEGER NOT NULL REFERENCES restaurant(restaurant_id) ON DELETE CASCADE,
+  saved_at TEXT NOT NULL DEFAULT (datetime('now')),
+  PRIMARY KEY (user_id, restaurant_id)
+);`);
 module.exports = db;

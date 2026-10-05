@@ -25,7 +25,7 @@ const testing = process.env.NODE_ENV === 'test';
 app.use('/api', rateLimit({ windowMs: 60000, limit: testing ? Number(process.env.TEST_RATE_LIMIT || 1000) : 100, standardHeaders: 'draft-8', legacyHeaders: false, message: { error: 'Too many requests. Try again in a minute.' } }));
 app.use('/api/auth', rateLimit({ windowMs: 60000, limit: testing ? 1000 : 20, skip: req => req.path === '/me', standardHeaders: 'draft-8', legacyHeaders: false, message: { error: 'Too many sign-in requests. Try again in a minute.' } }));
 app.get('/api/health', (req, res) => res.json({ status: 'ok', service: 'SmartDine', version: '2.0.0' }));
-for (const name of ['auth', 'preferences', 'location', 'restaurants', 'feedback', 'analytics', 'privacy', 'push']) app.use('/api/' + name, require('./routes/' + name));
+for (const name of ['auth', 'preferences', 'location', 'restaurants', 'feedback', 'analytics', 'privacy', 'push', 'favourites']) app.use('/api/' + name, require('./routes/' + name));
 app.use('/api', (req, res) => res.status(404).json({ error: 'Endpoint not found.' }));
 app.get('/assets/lucide.js', (req, res) => res.sendFile(path.join(__dirname, '../node_modules/lucide/dist/umd/lucide.js')));
 app.use(express.static(path.join(__dirname, '../../frontend')));
