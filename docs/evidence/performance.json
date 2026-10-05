@@ -1,0 +1,42 @@
+{
+  "capturedAt": "2026-10-04T15:09:15.799Z",
+  "node": "v24.19.0",
+  "platform": "win32",
+  "release": "10.0.26200",
+  "cpu": "12th Gen Intel(R) Core(TM) i7-12650H",
+  "logicalCpus": 16,
+  "memoryGiB": 31.7,
+  "method": "Local HTTP; real JWT cookie; isolated in-memory SQLite; one process; rate limiter raised for benchmark only. Request latency includes JSON body consumption. Not internet/production/load-capacity evidence.",
+  "results": [
+    {
+      "restaurantCount": 6,
+      "samples": 200,
+      "concurrency": 10,
+      "warmup": 10,
+      "successful": 200,
+      "failures": 0,
+      "p50Ms": 12.82,
+      "p95Ms": 17.5,
+      "p99Ms": 19.12,
+      "maxMs": 20.09,
+      "elapsedMs": 264.48,
+      "requestsPerSecond": 756.2,
+      "errors": []
+    },
+    {
+      "restaurantCount": 1006,
+      "samples": 200,
+      "concurrency": 10,
+      "warmup": 10,
+      "successful": 200,
+      "failures": 0,
+      "p50Ms": 108.49,
+      "p95Ms": 123.99,
+      "p99Ms": 147.1,
+      "maxMs": 147.56,
+      "elapsedMs": 2242.52,
+      "requestsPerSecond": 89.19,
+      "errors": []
+    }
+  ]
+}
