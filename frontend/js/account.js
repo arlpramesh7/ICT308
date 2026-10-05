@@ -12,7 +12,14 @@ if (user) {
   else $('#push-status').textContent = 'Browser permission: ' + ('Notification' in window ? Notification.permission : 'unsupported') + '. In-app offers do not need browser permission.';
   $('#notification-preference').addEventListener('change', async () => {
     const input = $('#notification-preference'); input.disabled = true;
-    try { await api('/privacy/settings', { method: 'PATCH', body: { notifications_enabled: input.checked } }); if (!input.checked && 'serviceWorker' in navigator) { const reg = await navigator.serviceWorker.getRegistration(); await (await reg?.pushManager.getSubscription())?.unsubscribe(); } toast('Notification preference saved.'); }
+    try {
+      await api('/privacy/settings', { method: 'PATCH', body: { notifications_enabled: input.checked } });
+      if (!input.checked && 'serviceWorker' in navigator) {
+        try { const reg = await navigator.serviceWorker.getRegistration(); await (await reg?.pushManager?.getSubscription())?.unsubscribe(); }
+        catch { /* The server already removed subscriptions and saved the preference. */ }
+      }
+      toast('Notification preference saved.');
+    }
     catch (error) { input.checked = !input.checked; toast(error.message, true); }
     finally { input.disabled = false; }
   });
@@ -29,22 +36,25 @@ if (user) {
   }));
   $('#disable-push').addEventListener('click', () => busy($('#disable-push'), async () => {
     const reg = await navigator.serviceWorker?.getRegistration();
-    const subscription = await reg?.pushManager.getSubscription();
+    const subscription = await reg?.pushManager?.getSubscription();
     if (subscription) { await api('/push/subscribe', { method: 'DELETE', body: { endpoint: subscription.endpoint } }); await subscription.unsubscribe(); }
     $('#push-status').textContent = 'Browser alerts disabled. In-app offers remain available.';
   }));
   $('#export-data').addEventListener('click', () => busy($('#export-data'), async () => {
     const data = await api('/privacy/export'); const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }));
-    const a = document.createElement('a'); a.href = url; a.download = 'smartdine-my-data.json'; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); toast('Data export downloaded.');
+    const a = document.createElement('a'); a.href = url; a.download = 'smartdine-my-data.json'; document.body.append(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 30000); toast('Your data export is ready. Check your browser downloads.');
   }));
   $('#clear-history').addEventListener('click', () => $('#history-dialog').showModal());
   $('#confirm-clear').addEventListener('click', () => busy($('#confirm-clear'), async () => { await api('/privacy/history', { method: 'DELETE', body: {} }); $('#history-dialog').close(); toast('Recommendation and offer history cleared.'); }));
   $('#delete-account-form').addEventListener('submit', event => {
     event.preventDefault(); busy(event.submitter, async () => {
       await api('/privacy/account', { method: 'DELETE', body: { password: $('#delete-password').value, confirmation: $('#delete-confirmation').value }, redirectOn401: false });
-      if ('serviceWorker' in navigator) { const reg = await navigator.serviceWorker.getRegistration(); await (await reg?.pushManager.getSubscription())?.unsubscribe(); }
+      if ('serviceWorker' in navigator) {
+        try { const reg = await navigator.serviceWorker.getRegistration(); await (await reg?.pushManager?.getSubscription())?.unsubscribe(); }
+        catch { /* Account deletion succeeded; device cleanup must not block redirect. */ }
+      }
       location.assign('/login.html');
     });
   });
 }
-

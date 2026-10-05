@@ -1,24 +1,20 @@
 /**
  * Recommendation scoring service (FR5).
  *
- * Extracted from utils/geo.js into its own service during Iteration 1 so the
- * scoring model can be unit tested without starting the Express application or
- * touching the database. Every function here is pure: it takes plain objects
- * and returns a number, which is what makes tests/scoring.test.js possible.
+ * Scores plain inputs without database access. Promotion eligibility also
+ * depends on the current time; the other terms are deterministic calculations.
  *
  * WHY A WEIGHTED LINEAR MODEL RATHER THAN MACHINE LEARNING
  * --------------------------------------------------------
  * The design report lists ML-based recommendation as future work. It is not
- * appropriate for Iteration 1 for three reasons:
- *   1. Cold start -- the pilot has one partner venue and no interaction
- *      history, so a collaborative model has nothing to learn from.
+ * appropriate for this demonstration for three reasons:
+ *   1. Cold start -- the fictional venues have no validated interaction
+ *      dataset with which to train a collaborative model.
  *   2. Explainability -- every score decomposes into named contributions, so
  *      the app can tell a user why a venue was suggested and the owner can see
  *      why theirs ranked where it did.
- *   3. Auditability -- section 7.1 of the design report commits to algorithmic
- *      fairness, with visibility determined only by proximity, preference match
- *      and rating. Fixed, inspectable weights make that commitment checkable;
- *      a learned model would not.
+ *   3. Auditability -- fixed weights expose the effects of preferences,
+ *      distance, ratings and promotions. Inspectability does not prove fairness.
  *
  * WHAT CHANGED FROM THE PREVIOUS MODEL
  * ------------------------------------
@@ -49,16 +45,14 @@ if (TOTAL_WEIGHT !== 100) {
   throw new Error(`Scoring weights must total 100, got ${TOTAL_WEIGHT}`);
 }
 
-/** Dietary requirements that exclude a venue which is not vegetarian friendly. */
 const { promotionActive } = require('./promotion');
 
 /**
  * Proximity term, 0..1.
  *
  * Linear decay from 1 at the customer's position to 0 at the edge of their
- * discovery radius. Linear rather than exponential because it is intuitive to
- * explain and, across the one-to-two kilometre range of a CBD lunch decision,
- * ranks candidates almost identically to an exponential curve.
+ * discovery radius. This linear policy is straightforward to explain; no
+ * empirical comparison with exponential ranking is claimed.
  */
 function proximityTerm(distanceMetres, radiusKm) {
   const maxDistance = Math.max(1, radiusKm * 1000);
@@ -108,8 +102,9 @@ function priceTerm(restaurantPrice, preferredPrice) {
  * Rating term, 0..1, from the venue's mean customer rating (FR9).
  *
  * The mean is shrunk toward a neutral prior of 3.0 using Bayesian damping, so
- * a venue with a single five-star review cannot outrank a venue with fifty
- * reviews averaging 4.5. CONFIDENCE_K is the number of ratings at which the
+ * a single five-star review receives a smaller rating contribution than fifty
+ * reviews averaging 4.5. Other terms can still change the overall ranking.
+ * CONFIDENCE_K is the number of ratings at which the
  * observed mean carries half the weight.
  */
 const CONFIDENCE_K = 5;

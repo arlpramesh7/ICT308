@@ -28,9 +28,11 @@ export function header(user = null) {
   $('#logout')?.addEventListener('click', async () => {
     try {
       if (user.role === 'customer' && 'serviceWorker' in navigator) {
-        const registration = await navigator.serviceWorker.getRegistration();
-        const subscription = await registration?.pushManager.getSubscription();
-        if (subscription) { await api('/push/subscribe', { method: 'DELETE', body: { endpoint: subscription.endpoint } }); await subscription.unsubscribe(); }
+        try {
+          const registration = await navigator.serviceWorker.getRegistration();
+          const subscription = await registration?.pushManager?.getSubscription();
+          if (subscription) { await api('/push/subscribe', { method: 'DELETE', body: { endpoint: subscription.endpoint } }); await subscription.unsubscribe(); }
+        } catch { /* Optional push cleanup must not block session revocation. */ }
       }
       await api('/auth/logout', { method: 'POST', body: {} }); location.assign('/login.html');
     } catch (error) { toast(error.message, true); }
@@ -58,4 +60,3 @@ export async function busy(button, action) {
   finally { button.disabled = false; button.removeAttribute('aria-busy'); }
 }
 document.querySelectorAll('.close-dialog').forEach(button => button.addEventListener('click', () => button.closest('dialog').close()));
-
