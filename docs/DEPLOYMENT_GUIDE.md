@@ -33,9 +33,9 @@ npm test
 npm run test:performance
 npm audit --prefix backend
 ```
-The performance command uses its own in-memory database and raised test rate limit; it does not add 1000 venues to the demonstration database. Results are written to docs/evidence/performance.json.
+The performance command uses its own in-memory database and raised test rate limit; it does not add 1000 venues to the demonstration database. Results are written to the ignored backend/test-results/performance.json file and uploaded as a CI artifact.
 
-Current clean-install evidence: docs/evidence/clean-install-final.json. A separate release clone passed npm ci, first and repeat setup, actual startup on port 4012, HTML/health HTTP 200 and all fifteen logins. Each privileged account has one correct assignment and other-venue access returns 403. Repeat setup retained 21 users (15 active accounts plus six inactive sample-review authors), six restaurants, fourteen memberships and 36 reviews. The verification server was stopped; the normal local application uses port 4000.
+A separate release clone passed npm ci, first and repeat setup, actual startup on port 4012, HTML/health HTTP 200 and all fifteen logins. Each privileged account has one correct assignment and other-venue access returns 403. Repeat setup retained 21 users (15 active accounts plus six inactive sample-review authors), six restaurants, fourteen memberships and 36 reviews. The verification server was stopped; the normal local application uses port 4000.
 
 ## Backup and release
 Stop the process before copying the SQLite database and related WAL/SHM files. Store backups privately, outside the repository. Test a restore on a copy, never overwrite a live assessment database without a backup. Keep .env private and retain its signing keys while sessions/subscriptions need to remain valid.

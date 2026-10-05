@@ -128,6 +128,6 @@ While logged in as customer, open /owner.html or /staff.html. The interface disp
 | GPS denied | Choose a named search area |
 
 ## 12 Verification and limitations
-Run npm test for the isolated automated suite and npm run test:performance for a separate local benchmark. Tests do not need the demonstration server and do not erase its database. Saved evidence is in docs/evidence.
+Run npm test for the isolated automated suite and npm run test:performance for a separate local benchmark. Tests do not need the demonstration server and do not erase its database. Test results appear in the terminal; benchmark results are also written to the ignored backend/test-results/performance.json file.
 
 This release provides persisted pickup orders, not real payments or external restaurant fulfilment. It does not provide delivery/drivers/live tracking, booking, native mobile/background GPS, email verification/password reset, production HTTPS hosting or guaranteed push delivery. Dietary flags and sample restaurants are fixtures. Human UAT and lecturer access checks must be completed by actual people; no usability score or production uptime is implied.

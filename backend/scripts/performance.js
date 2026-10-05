@@ -55,7 +55,7 @@ async function main() {
     }
   } finally { await new Promise(resolve=>server.close(resolve)); db.close(); }
   const evidence = {capturedAt:new Date().toISOString(),node:process.version,platform:os.platform(),release:os.release(),cpu:os.cpus()[0]?.model,logicalCpus:os.cpus().length,memoryGiB:Number((os.totalmem()/2**30).toFixed(1)),method:'Local HTTP; real JWT cookie; isolated in-memory SQLite; one process; rate limiter raised for benchmark only. Request latency includes JSON body consumption. Not internet/production/load-capacity evidence.',results};
-  const destination = path.resolve(__dirname,'../../docs/evidence/performance.json');
+  const destination = path.resolve(__dirname,'../test-results/performance.json');
   fs.mkdirSync(path.dirname(destination),{recursive:true});
   fs.writeFileSync(destination,JSON.stringify(evidence,null,2)+'\n');
   console.log(JSON.stringify(evidence,null,2));

@@ -1,6 +1,6 @@
 # SmartDine
 
-**Latest delivery state:** photographic discovery, restaurant pages, persistent favourites, paginated reviews and complete pickup ordering are implemented. **145 automated tests pass.** See [raw verification evidence](docs/evidence) and the limitations below for remaining human release checks. [PR #2](https://github.com/arlpramesh7/ICT308/pull/2) records the completed final-delivery merge into main; [PR #3](https://github.com/arlpramesh7/ICT308/pull/3) records restaurant-account and release-consistency work.
+**Latest delivery state:** photographic discovery, restaurant pages, persistent favourites, paginated reviews and complete pickup ordering are implemented. **145 automated tests pass.** See the limitations below for remaining human release checks. [PR #2](https://github.com/arlpramesh7/ICT308/pull/2) records the completed final-delivery merge into main; [PR #3](https://github.com/arlpramesh7/ICT308/pull/3) records restaurant-account and release-consistency work.
 
 [![SmartDine verification](https://github.com/arlpramesh7/ICT308/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/arlpramesh7/ICT308/actions/workflows/tests.yml)
 
@@ -73,7 +73,7 @@ npm test
 npm run test:performance
 npm audit --prefix backend
 ```
-Latest saved local run: **145 passed, 0 failed, 0 skipped**: 36 unit, five seed/persistence and 104 HTTP/security tests. [Final test output](docs/evidence/final-tests.txt) contains the saved release run. Tests use isolated databases. The benchmark passed all 400 measured requests, with p95 21.80 ms at six venues and 728.62 ms at 1,006 venues. These are short local measurements, not production capacity. Clean-clone installation, repeat setup, all fifteen account logins and restaurant isolation passed. See [raw evidence](docs/evidence).
+Verified release run: **145 passed, 0 failed, 0 skipped**: 36 unit, five seed/persistence and 104 HTTP/security tests. Run `npm test` to reproduce the suite using isolated databases. The release benchmark passed all 400 measured requests, with p95 21.80 ms at six venues and 728.62 ms at 1,006 venues. These are short local measurements, not production capacity. Clean-clone installation, repeat setup, all fifteen account logins and restaurant isolation passed. Benchmark results are generated locally in the ignored `backend/test-results/performance.json` file and uploaded as a CI artifact.
 
 GitHub Actions runs locked installation, tests, dependency audit and performance smoke verification on pushes/PRs. Read the actual run status; the badge alone is not an independent review.
 
@@ -100,7 +100,7 @@ frontend/
   js/               shared API helper and role-specific workflows
   assets/
   sw.js             optional push service worker
-docs/               guides and real evidence
+docs/               technical guides
 .github/workflows/tests.yml
 ```
 
