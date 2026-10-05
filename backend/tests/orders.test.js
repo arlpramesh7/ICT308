@@ -62,6 +62,41 @@ test('quantity updates, removals and clear apply only to the authenticated cart'
   assert.equal((await request('/cart', 'GET', undefined, other)).body.item_count, 2);
   await add(); assert.equal((await request('/cart', 'DELETE')).body.item_count, 0);
 });
+
+test('cross-restaurant conflict is explicit and leaves the existing cart intact', async () => {
+  await add(item, 2); const result = await add(foreignItem);
+  assert.equal(result.status, 409); assert.equal(result.body.code, 'CART_RESTAURANT_CONFLICT');
+  assert.equal((await request('/cart')).body.item_count, 2);
+});
+test('confirmed cart switch atomically replaces only the authenticated cart', async () => {
+  const old = (await add(item, 3)).body; await add(item, 2, other);
+  const result = await request('/cart/switch', 'POST', { item_id: foreignItem, quantity: 2, cart_revision: old.revision });
+  assert.equal(result.status, 200); assert.equal(result.body.item_count, 2); assert.equal(result.body.items[0].item_id, foreignItem);
+  assert.equal((await request('/cart', 'GET', undefined, other)).body.items[0].item_id, item);
+});
+test('stale or invalid switch requests preserve the existing cart', async () => {
+  const old = (await add()).body; await add();
+  assert.equal((await request('/cart/switch', 'POST', { item_id: foreignItem, quantity: 1, cart_revision: old.revision })).status, 409);
+  const current = (await request('/cart')).body;
+  for (const [id, quantity, revision, status] of [[99999, 1, current.revision, 404], [foreignItem, 0, current.revision, 400], [foreignItem, 1, 'invalid', 400], [item, 1, current.revision, 409]]) {
+    assert.equal((await request('/cart/switch', 'POST', { item_id: id, quantity, cart_revision: revision })).status, status);
+    assert.equal((await request('/cart')).body.item_count, 2);
+  }
+});
+test('unavailable or inactive switch target cannot clear the existing cart', async () => {
+  const cart = (await add()).body;
+  db.prepare('UPDATE menu_item SET is_available = 0 WHERE item_id = ?').run(foreignItem);
+  const input = { item_id: foreignItem, quantity: 1, cart_revision: cart.revision };
+  assert.equal((await request('/cart/switch', 'POST', input)).status, 409);
+  db.prepare('UPDATE menu_item SET is_available = 1 WHERE item_id = ?').run(foreignItem); db.exec('UPDATE restaurant SET is_active = 0 WHERE restaurant_id = 2');
+  assert.equal((await request('/cart/switch', 'POST', input)).status, 409);
+  assert.equal((await request('/cart')).body.items[0].item_id, item);
+});
+test('cart switching retains authentication and role checks', async () => {
+  const input = { item_id: foreignItem, quantity: 1, cart_revision: 'a'.repeat(64) };
+  assert.equal((await request('/cart/switch', 'POST', input, null)).status, 401);
+  assert.equal((await request('/cart/switch', 'POST', input, staff)).status, 403);
+});
 test('empty carts cannot be checked out', async () => { assert.equal((await checkout()).status, 400); });
 test('checkout requires valid name, pickup mode, revision and retry key', async () => {
   await add();
@@ -71,6 +106,20 @@ test('checkout rejects stale cart revisions and changed menu prices', async () =
   const cart = (await add()).body; await add(); assert.equal((await checkout({ cart_revision: cart.revision })).status, 409);
   const current = (await request('/cart')).body; db.prepare('UPDATE menu_item SET price = 15.15 WHERE item_id = ?').run(item); assert.equal((await checkout({ cart_revision: current.revision })).status, 409);
   assert.equal(db.prepare('SELECT COUNT(*) AS n FROM customer_order').get().n, 0);
+});
+
+test('checkout accepts optional blank and Australian phone numbers and rejects invalid phones without consuming the cart', async () => {
+  for (const phone of ['dvds', '123', '+++', ['0400123456']]) {
+    await add(); const result = await checkout({ contact_phone: phone });
+    assert.equal(result.status, 400);
+    assert.ok(result.body.errors.some(e => e.field === 'contact_phone' && e.message === 'Enter a valid phone number or leave this field blank.'));
+    assert.ok((await request('/cart')).body.item_count > 0);
+  }
+  for (const phone of ['', '0400 123 456', '+61 400 123 456', '(02) 9123 4567']) {
+    await add(); const result = await checkout({ contact_phone: phone });
+    assert.equal(result.status, 201); assert.equal(result.body.contact_phone, phone);
+    assert.equal((await request('/cart')).body.item_count, 0);
+  }
 });
 test('checkout rechecks availability and opening hours', async () => {
   await add(); db.prepare('UPDATE menu_item SET is_available = 0 WHERE item_id = ?').run(item);

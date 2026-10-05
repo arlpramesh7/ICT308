@@ -22,11 +22,31 @@ try {
     else if (!user) target.innerHTML = '<a class="text-link" href="/login.html">Log in to order</a>';
   }
   if (user?.role === 'customer') $('#venue-side').insertAdjacentHTML('beforeend', '<a class="button wide" href="/cart.html"><i data-lucide="shopping-bag"></i> View cart</a>');
+  let pendingSwitch;
+  document.body.insertAdjacentHTML('beforeend', '<dialog id="cart-switch-dialog" aria-labelledby="cart-switch-title" aria-describedby="cart-switch-description"><h2 id="cart-switch-title">Switch restaurants?</h2><p id="cart-switch-description"></p><div class="actions cart-switch-actions"><button class="button secondary" id="cancel-cart-switch" autofocus>Cancel</button><button class="button" id="confirm-cart-switch"><i data-lucide="shopping-bag"></i> Clear cart &amp; add item</button></div></dialog>');
+  const switchDialog = $('#cart-switch-dialog');
+  $('#cancel-cart-switch').addEventListener('click', () => switchDialog.close());
+  switchDialog.addEventListener('close', () => { pendingSwitch = null; });
+  $('#confirm-cart-switch').addEventListener('click', event => busy(event.currentTarget, async () => {
+    if (!pendingSwitch) return;
+    const cart = await api('/cart/switch', { method: 'POST', body: pendingSwitch });
+    updateCartCount(cart); switchDialog.close(); toast('Cart switched. Item added.');
+  }));
   $('#full-menu').addEventListener('click', event => {
     const button = event.target.closest('[data-add]');
     if (button) busy(button, async () => {
-      const cart = await api('/cart/items', { method: 'POST', body: { item_id: Number(button.dataset.add), quantity: 1 } });
-      updateCartCount(cart); toast('Added to your cart.');
+      const itemId = Number(button.dataset.add);
+      try {
+        const cart = await api('/cart/items', { method: 'POST', body: { item_id: itemId, quantity: 1 } });
+        updateCartCount(cart); toast('Added to your cart.');
+      } catch (error) {
+        if (error.code !== 'CART_RESTAURANT_CONFLICT') throw error;
+        const cart = await api('/cart');
+        if (!cart.restaurant) throw new Error('Your cart changed. Please try adding the item again.');
+        pendingSwitch = { item_id: itemId, quantity: 1, cart_revision: cart.revision };
+        $('#cart-switch-description').textContent = 'Your cart has ' + cart.item_count + ' item' + (cart.item_count === 1 ? '' : 's') + ' from ' + cart.restaurant.name + '. Clear those items and add this item from ' + r.name + '?';
+        switchDialog.showModal(); $('#cancel-cart-switch').focus();
+      }
     });
   });
   await initReviews(id, user);
