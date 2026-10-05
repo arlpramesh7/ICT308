@@ -2,7 +2,7 @@
 
 ## Latest Regression Run
 
-The release-account regression run passed **145 tests**, with zero failures, cancellations or skips in **14.170 seconds**. Raw output: `evidence/final-tests.txt`. Breakdown: **36 unit, 5 seed/persistence, 104 HTTP/security**. The 17 account cases add repeatable seeding, personal-data preservation, atomic conflict rollback, production guards and twelve restaurant-specific role workflows. The earlier 82-test records remain historical. See [DELIVERY_UPDATE.md](DELIVERY_UPDATE.md) for browser checks. Human UAT remains unsigned.
+The release-account regression run passed **145 tests**, with zero failures, cancellations or skips in **14.170 seconds**. Raw output: `evidence/final-tests.txt`. Breakdown: **36 unit, 5 seed/persistence, 104 HTTP/security**. The 17 account cases add repeatable seeding, personal-data preservation, atomic conflict rollback, production guards and twelve restaurant-specific role workflows. The earlier 82-test results summarized below remain historical. See [browser QA](evidence/release-browser-qa.json) for the recorded customer checks. Human UAT remains unsigned.
 
 All twelve named staff/owner accounts authenticated in the real browser and showed exactly their intended restaurant. Automated HTTP cases additionally create/edit/disable/delete only assigned items, reject other-venue menus/promotions/orders, reject customer privileged access and staff owner-only analytics, and progress fixture orders through the complete lifecycle. Setup guards reject conflicting privileged credentials or memberships rather than resetting passwords or widening access.
 
@@ -37,7 +37,7 @@ Runtime: Node.js 24.19.0 on Windows build 26200. Full suite: 82 passed, 0 failed
 | security.test.js | 5 | 5 | 0 | Throttling, origin, JSON parsing and headers |
 | Total | 82 | 82 | 0 | 33 unit and 49 HTTP/security tests |
 
-Saved outputs: evidence/tests.txt and evidence/tests.xml. Tests create isolated in-memory databases and start ephemeral HTTP servers. The account lock expiry test sets a past database deadline; it verifies expiry behavior without pretending to wait 15 minutes. These assertions are not a penetration test or coverage percentage.
+The historical baseline text/XML logs were removed during repository cleanup; the latest saved 145-test release output remains in [evidence/final-tests.txt](evidence/final-tests.txt). Tests create isolated in-memory databases and start ephemeral HTTP servers. The account lock expiry test sets a past database deadline; it verifies expiry behavior without pretending to wait 15 minutes. These assertions are not a penetration test or coverage percentage.
 
 ## Performance
 200 measured authenticated requests per scenario, 10 concurrent clients, 10 warm-ups, isolated in-memory SQLite. Windows 11, Intel i7-12650H, 16 logical CPUs, 31.7 GiB RAM. Client duration includes HTTP and JSON body consumption.
@@ -68,7 +68,7 @@ Historical notification spam and impression inflation were already corrected in 
 Observed: customer/staff/owner login; persisted preferences; inside-geofence recommendations; six score components; vegetarian/vegan exclusions; dedicated full menu and paginated reviews; saved browser-QA rating; staff create/edit/disable; dated promotion save; actual owner metrics; access-denied screen; customer narrow-screen layout. The retained [browser QA](evidence/release-browser-qa.json) and [restaurant-account checks](evidence/restaurant-account-browser.json) record the expanded verification. This is tool-assisted functional/visual verification, not human UAT.
 
 ## Clean installation and CI
-A separate clone passed npm ci, first/repeated setup, health/HTML startup and three role logins. See evidence/clean-install.json.
+A separate earlier clone passed npm ci, first/repeated setup, health/HTML startup and three role logins. Its historical raw record was removed during repository cleanup; the current fifteen-account installation record is linked below.
 
 The current account implementation 02749dc passed a fresh isolated clone, npm ci, first and repeated setup, all fifteen seeded logins, exact restaurant assignment/other-venue 403, authenticated profile, empty initial cart and ordering-page HTTP checks. Repeated setup retained 21 users (15 active and six inactive review authors), six restaurants, fourteen memberships and 36 reviews. See evidence/clean-install-final.json. The temporary verification server was stopped. The subsequent b917068 change only adjusts the isolated test client's connection handling, not deployment behavior. Dependency audit found zero vulnerabilities; evidence/dependency-audit.json records the actual audit.
 GitHub Actions run 37212127823 passed installation, automated tests, dependency audit and performance smoke test on Ubuntu. URL: https://github.com/arlpramesh7/ICT308/actions/runs/37212127823
