@@ -1,7 +1,7 @@
 /**
  * Restaurant owner analytics (FR10).
  *
- * Access is restricted to the staff and owner roles: engagement data is
+ * Access is restricted to assigned owners: engagement data is
  * commercially sensitive and, although it is aggregated, it should not be
  * readable by customers.
  */

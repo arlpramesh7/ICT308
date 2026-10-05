@@ -1,7 +1,6 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
-const bcrypt = require('bcryptjs');
 const webpush = require('web-push');
 const envPath = path.join(__dirname, '../.env');
 if (!fs.existsSync(envPath)) {
@@ -17,26 +16,11 @@ if (!fs.existsSync(envPath)) {
 require('../src/config');
 if (process.env.NODE_ENV === 'production') throw new Error('Demo setup is disabled in production.');
 const db = require('../src/db');
-const accounts = [
-  ['Prajwal Shrestha', 'customer@smartdine.test', 'customer'],
-  ['Jamie Chen', 'staff@smartdine.test', 'staff'],
-  ['Taylor Singh', 'owner@smartdine.test', 'owner'],
-];
-const password = 'SmartDine-Demo26!';
-const hash = bcrypt.hashSync(password, 12);
-db.prepare("UPDATE user SET display_name = 'Prajwal Shrestha' WHERE email = 'customer@smartdine.test' AND role = 'customer'").run();
-for (const [name, email, role] of accounts) {
-  if (!db.prepare('SELECT 1 FROM user WHERE email = ?').get(email)) {
-    const username = db.prepare('SELECT 1 FROM user WHERE username = ?').get(name) ? 'smartdine.' + role : name;
-    const info = db.prepare('INSERT INTO user (username, display_name, email, password_hash, role) VALUES (?, ?, ?, ?, ?)').run(username, name, email, hash, role);
-    if (role !== 'customer') {
-      const venue = db.prepare("SELECT restaurant_id FROM restaurant WHERE name = 'The Spice Tailor'").get();
-      if (venue) db.prepare('INSERT INTO restaurant_member (user_id, restaurant_id) VALUES (?, ?)').run(info.lastInsertRowid, venue.restaurant_id);
-    }
-  }
-}
+const { seedDemoAccounts, password } = require('./demo-accounts');
+const accounts = seedDemoAccounts(db);
 require('./seed-reviews').seedReviews();
 db.close();
-console.log('Demo ready. Accounts: customer@smartdine.test, staff@smartdine.test, owner@smartdine.test');
+console.log('Local demonstration accounts ready:');
+for (const account of accounts) console.log(account.name + ': ' + account.email);
 console.log('Demo-only password: ' + password);
 console.log('Run npm start, then open http://localhost:4000');

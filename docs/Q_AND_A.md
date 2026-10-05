@@ -26,13 +26,13 @@ The working Assessment 1 browser baseline provided a reliable path to a complete
 An embedded database avoids separate services and supports isolated tests. The small local workload does not justify a cache. SQLite has write-concurrency limits, so production growth would require measured evaluation and migration testing.
 
 ### 8 How can another person run it
-Install Node.js 24, clone the repository, check out feature/SMAR-36-final-delivery until merged, run npm ci, npm run setup and npm start, then open localhost:4000. Setup preserves existing local configuration and accounts.
+Install Node.js 24, clone main, run npm ci, npm run setup and npm start, then open localhost:4000. Setup preserves local configuration and personal accounts and provisions one customer, twelve restaurant-specific staff/owners and two pilot aliases. Use README/USER_GUIDE credentials, not a guessed personal password.
 
 ### 9 Is this a production deployment
 No. Local installation and Ubuntu CI are verified. Internet hosting, TLS termination, encrypted backups, recovery procedures and production monitoring remain deployment work.
 
 ### 10 What does setup generate
-It creates ignored local configuration with a random JWT secret and VAPID keys when absent, initializes schema and provisions three demonstration roles. Repeated setup does not reset passwords or existing activity.
+It creates ignored local configuration with random JWT/VAPID keys, initializes schema and provisions fifteen local accounts across the existing three roles. Each restaurant has exclusive staff/owner accounts, with pilot aliases retained. Repeat setup preserves personal passwords/data, repairs only the intended missing membership and rolls back conflicts. Production/disabled fixtures refuse provisioning.
 
 ## Data and security
 
@@ -139,7 +139,7 @@ Profile, preferences, feedback and restaurant-associated activity are stored. Ra
 ## Testing and project evidence
 
 ### 43 What is the difference between unit and integration testing
-Unit tests call individual geometry/scoring calculations. HTTP integration tests start the actual Express application and exercise middleware, routes and database effects together. The current saved suite contains 36 unit and 92 HTTP/security tests, all passing. The earlier 82-test result remains historical evidence.
+Unit tests call geometry/scoring/phone calculations. Five seed/persistence tests verify idempotency, preservation, collisions, atomic rollback and production guards. HTTP tests start Express and exercise middleware, routes and database effects. The saved suite contains 145 passing tests: 36 unit, 5 seed/persistence and 104 HTTP/security. The earlier 82-test result is historical evidence.
 
 ### 44 What regression evidence is strongest
 Tests specifically repeat previously unsafe cases: privileged registration, unassigned venue writes, unsupported diets, repeated offers and duplicate effective ratings. A passing regression protects a stated behavior, not all possible behaviors.
@@ -148,13 +148,13 @@ Tests specifically repeat previously unsafe cases: privileged registration, unas
 No. Automated or tool-assisted browser checks observe functionality. Human UAT requires actual participants to perform tasks and provide judgments and acceptance records. Those records are currently pending rather than invented.
 
 ### 46 What do the performance results prove
-Two isolated local scenarios each ran 200 authenticated requests with ten concurrent clients. Saved p95 values were 17.50 ms for six venues and 123.99 ms for 1,006 venues, with no failures. In-memory localhost results do not establish internet latency or production capacity.
+Two isolated local scenarios each ran 200 authenticated requests with ten concurrent clients. Latest p95 values are 21.80 ms for six venues and 728.62 ms for 1,006 venues, with no failures and both below the 3-second gate. They vary with host load; in-memory localhost results do not establish internet latency or production capacity.
 
 ### 47 What does continuous integration do
 GitHub Actions installs locked dependencies on Node.js 24, runs the tests, audits backend dependencies and runs the isolated performance smoke test. The first successful run is 37212127823. Green CI does not replace human review.
 
 ### 48 How do GitHub and Jira connect
-Real SMAR issue keys appear in new commit messages on feature/SMAR-36-final-delivery. Existing issues 33-35 were reused; 36-44 and existing SMAR-7 trace actual final work. Status changes reflect evidence; no dates, approvals or historical activity are fabricated.
+Real SMAR keys appear in commits. PR #2 merged feature/SMAR-36-final-delivery; PR #3 records feature/SMAR-45-restaurant-demo-accounts. Existing issues 33-35 were reused; SMAR-7 and 36-45 trace final work. SMAR-4/25/29 are satisfied; 3/16/17 and human SMAR-40 remain open. No dates, approvals or historical activity are fabricated.
 
 ### 49 How should I explain my contribution
 Use the earlier report and actual commits to describe what you really did in FR5, FR9, FR10, unit testing, defects, database work and prototype testing. Then explain the final code's behavior. Do not infer personal authorship from an issue assignee or repeat an unconfirmed percentage; disclose assistance in the designated declaration.
