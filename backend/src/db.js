@@ -54,6 +54,12 @@ const migrations = [
   addColumnIfMissing('user', 'privacy_accepted_at', 'TEXT'),
   addColumnIfMissing('user', 'notifications_enabled', 'INTEGER NOT NULL DEFAULT 1 CHECK (notifications_enabled IN (0,1))'),
   addColumnIfMissing('notification', 'push_status', "TEXT NOT NULL DEFAULT 'in_app'"),
+  addColumnIfMissing('restaurant', 'cover_image', "TEXT NOT NULL DEFAULT ''"),
+  addColumnIfMissing('restaurant', 'description', "TEXT NOT NULL DEFAULT ''"),
+  addColumnIfMissing('restaurant', 'opening_hours', "TEXT NOT NULL DEFAULT 'Daily 11:00 am - 10:00 pm'"),
+  addColumnIfMissing('restaurant', 'open_minute', 'INTEGER NOT NULL DEFAULT 660'),
+  addColumnIfMissing('restaurant', 'close_minute', 'INTEGER NOT NULL DEFAULT 1320'),
+  addColumnIfMissing('restaurant', 'pickup_minutes', 'INTEGER NOT NULL DEFAULT 20'),
 ].filter(Boolean);
 
 if (migrations.length > 0) {
@@ -200,4 +206,5 @@ for (const venue of seeded) {
   db.prepare("UPDATE menu_item SET vegan = 1 WHERE restaurant_id = ? AND item_name IN ('Vegetable Biryani','Harvest Grain Bowl','Roasted Cauliflower Steak')").run(id);
 }
 
+require('./catalog').enrichCatalog(db);
 module.exports = db;

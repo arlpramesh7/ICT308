@@ -6,6 +6,7 @@ const { promotionActive, deliverPush } = require('../services/notificationServic
 const { distanceMetres } = require('../utils/geo');
 const { scoreRestaurant } = require('../services/scoringService');
 const { ratingsByRestaurant } = require('../services/analyticsService');
+const { openingState } = require('../services/catalogService');
 
 const router = express.Router();
 router.use(requireAuth, requireRole('customer'));
@@ -130,6 +131,12 @@ router.post(
         name: r.name,
         cuisine_type: r.cuisine_type,
         price_range: r.price_range,
+        cover_image: r.cover_image,
+        description: r.description,
+        address: r.address,
+        pickup_minutes: r.pickup_minutes,
+        is_open: openingState(r),
+        rating_count: ratings.get(r.restaurant_id)?.count || 0,
         distance_metres: Math.round(distance),
         walk_minutes: Math.max(1, Math.round(distance / (5000 / 60))),
         within_geofence: withinGeofence,

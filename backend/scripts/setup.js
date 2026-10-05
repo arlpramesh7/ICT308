@@ -18,9 +18,9 @@ require('../src/config');
 if (process.env.NODE_ENV === 'production') throw new Error('Demo setup is disabled in production.');
 const db = require('../src/db');
 const accounts = [
-  ['Customer Demo', 'customer@smartdine.test', 'customer'],
-  ['Staff Demo', 'staff@smartdine.test', 'staff'],
-  ['Owner Demo', 'owner@smartdine.test', 'owner'],
+  ['Alex Morgan', 'customer@smartdine.test', 'customer'],
+  ['Jamie Chen', 'staff@smartdine.test', 'staff'],
+  ['Taylor Singh', 'owner@smartdine.test', 'owner'],
 ];
 const password = 'SmartDine-Demo26!';
 const hash = bcrypt.hashSync(password, 12);
@@ -37,4 +37,3 @@ db.close();
 console.log('Demo ready. Accounts: customer@smartdine.test, staff@smartdine.test, owner@smartdine.test');
 console.log('Demo-only password: ' + password);
 console.log('Run npm start, then open http://localhost:4000');
-

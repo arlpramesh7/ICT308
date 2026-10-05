@@ -4,6 +4,7 @@ const db = require('../db');
 const { requireAuth, requireRole, requireVenue } = require('../middleware/auth');
 const { validate } = require('../middleware/validation');
 const { promotionActive } = require('../services/notificationService');
+const { presentRestaurant } = require('../services/catalogService');
 const router = express.Router();
 const idRule = param('id').isInt({ min: 1 });
 const boolean = field => body(field).optional().custom(v => typeof v === 'boolean');
@@ -21,7 +22,7 @@ function venueExists(req, res, next) {
   if (!db.prepare('SELECT 1 FROM restaurant WHERE restaurant_id = ? AND is_active = 1').get(Number(req.params.id))) return res.status(404).json({ error: 'Restaurant not found.' });
   next();
 }
-router.get('/', (req, res) => res.json(db.prepare('SELECT * FROM restaurant WHERE is_active = 1').all().map(r => ({ ...r, promotion_active: Number(promotionActive(r)) }))));
+router.get('/', (req, res) => res.json(db.prepare('SELECT * FROM restaurant WHERE is_active = 1').all().map(r => presentRestaurant(db, r))));
 router.get('/managed', requireAuth, requireRole('staff', 'owner'), (req, res) => {
   res.json(db.prepare('SELECT r.* FROM restaurant r JOIN restaurant_member m USING (restaurant_id) WHERE m.user_id = ? AND r.is_active = 1').all(req.user.user_id));
 });
@@ -72,5 +73,8 @@ router.patch('/:id/promotion', requireAuth, requireRole('staff', 'owner'), idRul
     audit(req, 'promotion.update');
     res.json(db.prepare('SELECT * FROM restaurant WHERE restaurant_id = ?').get(Number(req.params.id)));
   });
+router.get('/:id', idRule, validate, venueExists, (req, res) => {
+  const restaurant = presentRestaurant(db, db.prepare('SELECT * FROM restaurant WHERE restaurant_id = ?').get(Number(req.params.id)));
+  res.json({ ...restaurant, menu: db.prepare('SELECT * FROM menu_item WHERE restaurant_id = ? ORDER BY category, item_name').all(restaurant.restaurant_id) });
+});
 module.exports = router;
-
