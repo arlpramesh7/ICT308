@@ -1,6 +1,6 @@
 # SmartDine
 
-**Latest delivery state:** photographic discovery, restaurant pages, persistent favourites, paginated reviews and complete pickup ordering are implemented. **145 automated tests pass.** See [testing report](docs/TESTING_REPORT.md) for verified journeys and remaining human release checks. [PR #2](https://github.com/arlpramesh7/ICT308/pull/2) records the completed final-delivery merge into main; [PR #3](https://github.com/arlpramesh7/ICT308/pull/3) records restaurant-account and release-consistency work.
+**Latest delivery state:** photographic discovery, restaurant pages, persistent favourites, paginated reviews and complete pickup ordering are implemented. **145 automated tests pass.** See [raw verification evidence](docs/evidence) and the limitations below for remaining human release checks. [PR #2](https://github.com/arlpramesh7/ICT308/pull/2) records the completed final-delivery merge into main; [PR #3](https://github.com/arlpramesh7/ICT308/pull/3) records restaurant-account and release-consistency work.
 
 [![SmartDine verification](https://github.com/arlpramesh7/ICT308/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/arlpramesh7/ICT308/actions/workflows/tests.yml)
 
@@ -73,7 +73,7 @@ npm test
 npm run test:performance
 npm audit --prefix backend
 ```
-Latest saved local run: **145 passed, 0 failed, 0 skipped**: 36 unit, five seed/persistence and 104 HTTP/security tests. `docs/evidence/final-tests.txt` contains the saved release run; historical baseline results are summarized in the testing report. Tests use isolated databases. The benchmark passed all 400 measured requests, with p95 21.80 ms at six venues and 728.62 ms at 1,006 venues. These are short local measurements, not production capacity. Clean-clone installation, repeat setup, all fifteen account logins and restaurant isolation passed. See [testing report](docs/TESTING_REPORT.md) and [raw evidence](docs/evidence).
+Latest saved local run: **145 passed, 0 failed, 0 skipped**: 36 unit, five seed/persistence and 104 HTTP/security tests. [Final test output](docs/evidence/final-tests.txt) contains the saved release run. Tests use isolated databases. The benchmark passed all 400 measured requests, with p95 21.80 ms at six venues and 728.62 ms at 1,006 venues. These are short local measurements, not production capacity. Clean-clone installation, repeat setup, all fifteen account logins and restaurant isolation passed. See [raw evidence](docs/evidence).
 
 GitHub Actions runs locked installation, tests, dependency audit and performance smoke verification on pushes/PRs. Read the actual run status; the badge alone is not an independent review.
 
@@ -100,7 +100,7 @@ frontend/
   js/               shared API helper and role-specific workflows
   assets/
   sw.js             optional push service worker
-docs/               report source, guides and real evidence
+docs/               guides and real evidence
 .github/workflows/tests.yml
 ```
 
@@ -110,8 +110,6 @@ docs/               report source, guides and real evidence
 - [API reference](docs/API.md)
 - [Design revisions](docs/DESIGN_REVISIONS.md)
 - [Security and privacy](docs/SECURITY_AND_PRIVACY.md)
-- [Testing report](docs/TESTING_REPORT.md)
-- [Human UAT protocol](docs/UAT_PLAN.md)
 
 ## GitHub and Jira
 Repository: https://github.com/arlpramesh7/ICT308
