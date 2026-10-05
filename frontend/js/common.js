@@ -24,7 +24,7 @@ export async function api(path, { method = 'GET', body, redirectOn401 = true } =
 export function updateCartCount(cart) {
   const count = $('#cart-count');
   if (count) { count.textContent = cart.item_count; count.hidden = !cart.item_count; }
-  $('#cart-link')?.setAttribute('aria-label', 'Cart, ' + cart.item_count + ' items');
+  $('#cart-link')?.setAttribute('aria-label', 'Cart, ' + cart.item_count + ' item' + (cart.item_count === 1 ? '' : 's'));
 }
 export function header(user = null) {
   const path = location.pathname;

@@ -44,7 +44,7 @@ try {
         const cart = await api('/cart');
         if (!cart.restaurant) throw new Error('Your cart changed. Please try adding the item again.');
         pendingSwitch = { item_id: itemId, quantity: 1, cart_revision: cart.revision };
-        $('#cart-switch-description').textContent = 'Your cart has ' + cart.item_count + ' item' + (cart.item_count === 1 ? '' : 's') + ' from ' + cart.restaurant.name + '. Clear those items and add this item from ' + r.name + '?';
+        $('#cart-switch-description').textContent = 'Your cart contains items from another restaurant. You have ' + cart.item_count + ' item' + (cart.item_count === 1 ? '' : 's') + ' from ' + cart.restaurant.name + '. Clear those items and add this item from ' + r.name + '?';
         switchDialog.showModal(); $('#cancel-cart-switch').focus();
       }
     });
