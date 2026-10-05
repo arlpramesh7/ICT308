@@ -1,0 +1,30 @@
+{
+  "capturedAt": "2026-10-04T15:15:26.573Z",
+  "node": "v24.19.0",
+  "commands": [
+    "git clone local repository",
+    "npm ci",
+    "npm run setup",
+    "npm run setup",
+    "node backend/src/app.js (PORT=4011)"
+  ],
+  "result": "PASS",
+  "checks": [
+    "Locked installation succeeded",
+    "First setup generated unique local secrets",
+    "Repeated setup preserved accounts and did not duplicate fixtures",
+    "Health and HTML returned HTTP 200",
+    "All three demo accounts authenticated with the correct role"
+  ],
+  "roles": [
+    "customer",
+    "staff",
+    "owner"
+  ],
+  "counts": {
+    "users": 3,
+    "restaurants": 6,
+    "memberships": 2
+  },
+  "logs": "SmartDine running at http://localhost:4011\n"
+}

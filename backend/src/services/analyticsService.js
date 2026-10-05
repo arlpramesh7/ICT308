@@ -20,7 +20,7 @@ function ratingsByRestaurant() {
   const rows = db
     .prepare(
       `SELECT restaurant_id, AVG(rating) AS average, COUNT(*) AS count
-       FROM feedback GROUP BY restaurant_id`
+       FROM current_feedback GROUP BY restaurant_id`
     )
     .all();
   const map = new Map();
@@ -91,14 +91,14 @@ function dashboard(restaurantId) {
       .all(restaurantId),
     rating_distribution: db
       .prepare(
-        `SELECT rating, COUNT(*) AS count FROM feedback
+        `SELECT rating, COUNT(*) AS count FROM current_feedback
          WHERE restaurant_id = ? GROUP BY rating ORDER BY rating`
       )
       .all(restaurantId),
     recent_feedback: db
       .prepare(
-        `SELECT f.rating, f.comment, f.submitted_at, u.username
-         FROM feedback f JOIN user u ON u.user_id = f.user_id
+        `SELECT f.rating, f.comment, f.submitted_at
+         FROM current_feedback f
          WHERE f.restaurant_id = ? ORDER BY f.feedback_id DESC LIMIT 8`
       )
       .all(restaurantId),

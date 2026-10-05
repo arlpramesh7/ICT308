@@ -81,7 +81,7 @@ test('a vegetarian requirement excludes a venue that is not vegetarian friendly'
 
 test('dietary requirements are parsed from a comma separated list', () => {
   assert.strictEqual(dietaryTerm(steakhouse, 'halal, vegan'), null);
-  assert.strictEqual(dietaryTerm(steakhouse, 'halal'), 1, 'halal alone is not a plant-based exclusion');
+  assert.strictEqual(dietaryTerm(steakhouse, 'halal'), null, 'unverified dietary suitability must not be assumed');
 });
 
 test('no dietary requirement never excludes anything', () => {

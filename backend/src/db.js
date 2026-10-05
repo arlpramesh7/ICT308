@@ -1,16 +1,18 @@
 // Uses Node's built-in SQLite module (node:sqlite) — no native compilation
 // required, so no Python / Visual Studio Build Tools needed on Windows.
-// Available without a flag from Node 22.5+; older versions need
-// `node --experimental-sqlite src/app.js` (see package.json "start" script).
+// The supported and tested runtime is Node.js 24.
 const { DatabaseSync } = require('node:sqlite');
 const fs = require('fs');
 const path = require('path');
 
-const DB_PATH = path.join(__dirname, '..', 'db', 'smartdine.sqlite');
+const DB_PATH = process.env.DB_PATH || path.join(__dirname, '..', 'db', 'smartdine.sqlite');
 const SCHEMA_PATH = path.join(__dirname, '..', 'db', 'schema.sql');
 
+if (DB_PATH !== ':memory:') fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
 const db = new DatabaseSync(DB_PATH);
 db.exec('PRAGMA foreign_keys = ON');
+db.exec('PRAGMA journal_mode = WAL');
+db.exec('PRAGMA busy_timeout = 5000');
 
 // Initialise schema
 const schema = fs.readFileSync(SCHEMA_PATH, 'utf8');
@@ -34,12 +36,31 @@ function addColumnIfMissing(table, column, definition) {
 }
 
 const migrations = [
+  addColumnIfMissing('user', 'display_name', 'TEXT'),
   // Required by the dietary hard-exclusion rule in the scoring service (FR2, FR5).
   addColumnIfMissing('restaurant', 'vegetarian_friendly', 'INTEGER NOT NULL DEFAULT 0'),
   // FR8 asks staff to manage "menu, promotions, and availability"; promotions
   // had no storage in Iteration 1.
   addColumnIfMissing('restaurant', 'promotion_text', 'TEXT'),
   addColumnIfMissing('restaurant', 'promotion_active', 'INTEGER NOT NULL DEFAULT 0'),
+  addColumnIfMissing('restaurant', 'vegan_friendly', 'INTEGER NOT NULL DEFAULT 0 CHECK (vegan_friendly IN (0,1))'),
+  addColumnIfMissing('restaurant', 'promotion_start', 'TEXT'),
+  addColumnIfMissing('restaurant', 'promotion_end', 'TEXT'),
+  addColumnIfMissing('menu_item', 'description', "TEXT NOT NULL DEFAULT ''"),
+  addColumnIfMissing('menu_item', 'vegetarian', 'INTEGER NOT NULL DEFAULT 0 CHECK (vegetarian IN (0,1))'),
+  addColumnIfMissing('menu_item', 'vegan', 'INTEGER NOT NULL DEFAULT 0 CHECK (vegan IN (0,1))'),
+  addColumnIfMissing('user', 'failed_logins', 'INTEGER NOT NULL DEFAULT 0'),
+  addColumnIfMissing('user', 'locked_until', 'TEXT'),
+  addColumnIfMissing('user', 'token_version', 'INTEGER NOT NULL DEFAULT 0'),
+  addColumnIfMissing('user', 'privacy_accepted_at', 'TEXT'),
+  addColumnIfMissing('user', 'notifications_enabled', 'INTEGER NOT NULL DEFAULT 1 CHECK (notifications_enabled IN (0,1))'),
+  addColumnIfMissing('notification', 'push_status', "TEXT NOT NULL DEFAULT 'in_app'"),
+  addColumnIfMissing('restaurant', 'cover_image', "TEXT NOT NULL DEFAULT ''"),
+  addColumnIfMissing('restaurant', 'description', "TEXT NOT NULL DEFAULT ''"),
+  addColumnIfMissing('restaurant', 'opening_hours', "TEXT NOT NULL DEFAULT 'Daily 11:00 am - 10:00 pm'"),
+  addColumnIfMissing('restaurant', 'open_minute', 'INTEGER NOT NULL DEFAULT 660'),
+  addColumnIfMissing('restaurant', 'close_minute', 'INTEGER NOT NULL DEFAULT 1320'),
+  addColumnIfMissing('restaurant', 'pickup_minutes', 'INTEGER NOT NULL DEFAULT 20'),
 ].filter(Boolean);
 
 if (migrations.length > 0) {
@@ -52,6 +73,29 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_recommendation_restaurant ON recommendation(restaurant_id, timestamp);
   CREATE INDEX IF NOT EXISTS idx_notification_user ON notification(user_id, sent_at);
   CREATE INDEX IF NOT EXISTS idx_feedback_restaurant ON feedback(restaurant_id);
+  CREATE VIEW IF NOT EXISTS current_feedback AS SELECT * FROM feedback WHERE feedback_id IN (SELECT MAX(feedback_id) FROM feedback GROUP BY user_id, restaurant_id);
+  CREATE INDEX IF NOT EXISTS idx_recommendation_user_venue ON recommendation(user_id, restaurant_id, timestamp);
+  CREATE INDEX IF NOT EXISTS idx_notification_user_venue ON notification(user_id, restaurant_id, sent_at);
+  CREATE TABLE IF NOT EXISTS restaurant_member (
+    user_id INTEGER NOT NULL REFERENCES user(user_id) ON DELETE CASCADE,
+    restaurant_id INTEGER NOT NULL REFERENCES restaurant(restaurant_id) ON DELETE CASCADE,
+    PRIMARY KEY(user_id, restaurant_id)
+  );
+  CREATE TABLE IF NOT EXISTS push_subscription (
+    subscription_id INTEGER PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES user(user_id) ON DELETE CASCADE,
+    endpoint TEXT NOT NULL UNIQUE,
+    p256dh TEXT NOT NULL,
+    auth TEXT NOT NULL
+  );
+  CREATE TABLE IF NOT EXISTS audit_event (
+    event_id INTEGER PRIMARY KEY,
+    user_id INTEGER REFERENCES user(user_id) ON DELETE SET NULL,
+    restaurant_id INTEGER REFERENCES restaurant(restaurant_id),
+    action TEXT NOT NULL,
+    target_id INTEGER,
+    occurred_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
 `);
 
 /**
@@ -72,7 +116,7 @@ const PILOT = {
   cuisine_type: 'Indian',
   price_range: '$$',
   vegetarian_friendly: 1,
-  promotion_text: '20% off all curries between 2pm and 5pm today',
+  promotion_text: '20% off all curries - demonstration offer',
   promotion_active: 1,
 };
 
@@ -151,16 +195,23 @@ function seedRestaurant(r) {
   return true;
 }
 
-const seeded = [PILOT, ...COMPETITORS].filter(seedRestaurant);
+const seeded = process.env.DEMO_DATA === 'false' ? [] : [PILOT, ...COMPETITORS].filter(seedRestaurant);
 if (seeded.length > 0) {
   console.log(`Seeded ${seeded.length} restaurant(s): ${seeded.map((r) => r.name).join(', ')}`);
 }
 
-// Backfill the pilot venue's promotion and dietary flag for databases created
-// before those columns existed.
-db.prepare(
-  `UPDATE restaurant SET vegetarian_friendly = ?, promotion_text = ?, promotion_active = ?
-   WHERE name = ? AND promotion_text IS NULL`
-).run(PILOT.vegetarian_friendly, PILOT.promotion_text, PILOT.promotion_active, PILOT.name);
+for (const venue of seeded) {
+  if (['The Spice Tailor', 'Green Fork'].includes(venue.name)) db.prepare('UPDATE restaurant SET vegan_friendly = 1 WHERE name = ?').run(venue.name);
+  const id = findByName.get(venue.name).restaurant_id;
+  db.prepare("UPDATE menu_item SET vegetarian = 1 WHERE restaurant_id = ? AND item_name NOT IN ('Butter Chicken','Salmon Tiradito','Dry-Aged Sirloin','Bibimbap','Kimchi Jjigae')").run(id);
+  db.prepare("UPDATE menu_item SET vegan = 1 WHERE restaurant_id = ? AND item_name IN ('Vegetable Biryani','Harvest Grain Bowl','Roasted Cauliflower Steak')").run(id);
+}
 
+require('./catalog').enrichCatalog(db);
+db.exec(`CREATE TABLE IF NOT EXISTS favourite (
+  user_id INTEGER NOT NULL REFERENCES user(user_id) ON DELETE CASCADE,
+  restaurant_id INTEGER NOT NULL REFERENCES restaurant(restaurant_id) ON DELETE CASCADE,
+  saved_at TEXT NOT NULL DEFAULT (datetime('now')),
+  PRIMARY KEY (user_id, restaurant_id)
+);`);
 module.exports = db;

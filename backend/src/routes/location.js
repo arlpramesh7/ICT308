@@ -1,12 +1,15 @@
 const express = require('express');
 const { body, param, validationResult } = require('express-validator');
 const db = require('../db');
-const { requireAuth } = require('../middleware/auth');
+const { requireAuth, requireRole } = require('../middleware/auth');
+const { promotionActive, deliverPush } = require('../services/notificationService');
 const { distanceMetres } = require('../utils/geo');
 const { scoreRestaurant } = require('../services/scoringService');
 const { ratingsByRestaurant } = require('../services/analyticsService');
+const { openingState } = require('../services/catalogService');
 
 const router = express.Router();
+router.use(requireAuth, requireRole('customer'));
 
 /**
  * Cooldown between two geofence notifications for the same customer and venue.
@@ -40,14 +43,19 @@ router.post(
     const errors = validationResult(req);
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
-    const { latitude, longitude } = req.body;
+    const latitude = Number(req.body.latitude);
+    const longitude = Number(req.body.longitude);
     const userId = req.user.user_id;
 
     const preference = db.prepare('SELECT * FROM preference WHERE user_id = ?').get(userId);
-    const restaurants = db.prepare('SELECT * FROM restaurant WHERE is_active = 1').all();
     const ratings = ratingsByRestaurant(); // FR9 feeds back into FR5
 
     const radiusKm = preference?.radius_km || 5;
+    // Conservative latitude prefilter; exact Haversine checks follow.
+    // This remains correct across the antimeridian and near the poles.
+    const latSpan = radiusKm / 110;
+    const restaurants = db.prepare('SELECT * FROM restaurant WHERE is_active = 1 AND latitude BETWEEN ? AND ?').all(Math.max(-90, latitude - latSpan), Math.min(90, latitude + latSpan));
+    const notificationsEnabled = db.prepare('SELECT notifications_enabled FROM user WHERE user_id = ?').get(userId).notifications_enabled;
 
     const recentNotification = db.prepare(
       `SELECT 1 FROM notification
@@ -73,6 +81,8 @@ router.post(
       const distance = distanceMetres(latitude, longitude, r.latitude, r.longitude);
       const withinGeofence = distance <= r.geofence_radius;                 // FR4
       const withinDiscoveryRadius = distance <= radiusKm * 1000;
+      if (!withinDiscoveryRadius) continue;
+      const activePromotion = promotionActive(r);
 
       // FR5. Returns null when the customer's dietary requirement rules the
       // venue out entirely, rather than ranking it low -- surfacing a venue
@@ -92,7 +102,7 @@ router.post(
 
       // FR7: notify on an active promotion inside the fence, subject to cooldown.
       let notification = null;
-      if (withinGeofence && r.promotion_active && r.promotion_text) {
+      if (notificationsEnabled && withinGeofence && activePromotion) {
         const suppressed = recentNotification.get(
           userId, r.restaurant_id, `-${NOTIFICATION_COOLDOWN_MINUTES} minutes`
         );
@@ -100,6 +110,9 @@ router.post(
           const message = `You're ${Math.round(distance)} m from ${r.name} — ${r.promotion_text}`;
           const info = insertNotification.run(userId, r.restaurant_id, message);
           notification = { notif_id: Number(info.lastInsertRowid), message };
+          void deliverPush(notification, userId).catch(() => {
+            db.prepare("UPDATE notification SET push_status = 'push_failed' WHERE notif_id = ?").run(notification.notif_id);
+          });
         }
       }
 
@@ -118,6 +131,12 @@ router.post(
         name: r.name,
         cuisine_type: r.cuisine_type,
         price_range: r.price_range,
+        cover_image: r.cover_image,
+        description: r.description,
+        address: r.address,
+        pickup_minutes: r.pickup_minutes,
+        is_open: openingState(r),
+        rating_count: ratings.get(r.restaurant_id)?.count || 0,
         distance_metres: Math.round(distance),
         walk_minutes: Math.max(1, Math.round(distance / (5000 / 60))),
         within_geofence: withinGeofence,
@@ -127,7 +146,9 @@ router.post(
         // rather than presenting an unexplained number. This supports the
         // algorithmic transparency commitment in the design report.
         score_breakdown: withinDiscoveryRadius ? scored.breakdown : null,
-        promotion: r.promotion_active ? r.promotion_text : null,
+        promotion: activePromotion ? r.promotion_text : null,
+        vegetarian_friendly: Boolean(r.vegetarian_friendly),
+        vegan_friendly: Boolean(r.vegan_friendly),
         average_rating: ratings.get(r.restaurant_id)
           ? Number(ratings.get(r.restaurant_id).average.toFixed(1))
           : null,
@@ -204,8 +225,9 @@ router.patch(
     const errors = validationResult(req);
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
-    db.prepare('UPDATE notification SET is_read = 1 WHERE notif_id = ? AND user_id = ?')
+    const info = db.prepare('UPDATE notification SET is_read = 1 WHERE notif_id = ? AND user_id = ?')
       .run(Number(req.params.notifId), req.user.user_id);
+    if (!info.changes) return res.status(404).json({ error: 'Notification not found.' });
     res.json({ notif_id: Number(req.params.notifId), is_read: true });
   }
 );

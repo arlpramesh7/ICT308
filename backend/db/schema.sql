@@ -43,9 +43,9 @@ CREATE TABLE IF NOT EXISTS menu_item (
     item_id       INTEGER PRIMARY KEY AUTOINCREMENT,
     restaurant_id INTEGER NOT NULL REFERENCES restaurant(restaurant_id),
     item_name     TEXT NOT NULL,
-    price         REAL NOT NULL,
+    price         REAL NOT NULL CHECK (price >= 0 AND price <= 9999),
     category      TEXT,
-    is_available  INTEGER NOT NULL DEFAULT 1
+    is_available  INTEGER NOT NULL DEFAULT 1 CHECK (is_available IN (0,1))
 );
 
 CREATE TABLE IF NOT EXISTS recommendation (

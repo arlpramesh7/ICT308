@@ -1,0 +1,32 @@
+name: SmartDine verification
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Unit, API and security tests
+        run: npm test
+      - name: Dependency audit
+        run: npm audit --prefix backend --audit-level=high
+      - name: Isolated performance smoke test
+        run: npm run test:performance
+      - uses: actions/upload-artifact@v4
+        with:
+          name: verification-evidence
+          path: docs/evidence/performance.json

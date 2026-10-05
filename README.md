@@ -1,174 +1,120 @@
-# SmartDine — Iteration 1 (ICT308 Assessment 1)
+# SmartDine
 
-Location-based restaurant recommendation platform. This iteration implements
-the high-priority functional requirements from the ICT307 Assessment 2
-requirements analysis, on top of the architecture and database design from
-ICT307 Assessment 3.
+**Latest delivery state:** photographic discovery, restaurant pages, persistent favourites, paginated reviews and complete pickup ordering are implemented. **128 automated tests pass.** See [delivery update](docs/DELIVERY_UPDATE.md) for verified journeys and remaining human release checks. [PR #2](https://github.com/arlpramesh7/ICT308/pull/2) records the delivery branch and its live merge status.
 
-## Scope of this iteration
+[![SmartDine verification](https://github.com/arlpramesh7/ICT308/actions/workflows/tests.yml/badge.svg?branch=feature%2FSMAR-36-final-delivery)](https://github.com/arlpramesh7/ICT308/actions/workflows/tests.yml)
 
-| Requirement | Status | Where |
+Location-aware restaurant discovery with explainable recommendations, assigned-venue staff management and owner analytics. ICT308 Project 2 final web delivery, continuing the existing ICT307 design and Assessment 1 repository.
+
+## Quick start
+
+Requires **Node.js 24** and npm. From the repository root:
+
+```powershell
+npm ci
+npm run setup
+npm start
+```
+
+Open **http://localhost:4000**. The delivery branch is `feature/SMAR-36-final-delivery`; after PR #2 merges, the same implementation is available on `main`. Express serves both frontend and API; no separate frontend server is needed.
+
+| Demo role | Email | Password |
 |---|---|---|
-| FR1 – Register / login | ✅ Implemented | `POST /api/auth/register`, `POST /api/auth/login` |
-| FR2 – Set food/dietary preferences | ✅ Implemented | `PUT /api/preferences` |
-| FR3 – GPS location detection | ✅ Implemented (client sends coordinates) | `POST /api/location/update` |
-| FR4 – Geofencing trigger | ✅ Implemented | `POST /api/location/update` |
-| FR5 – Recommend restaurant by location + preference | ✅ Implemented | `POST /api/location/update` (scoring in `services/scoringService.js`) |
-| FR6 – Map directions | ✅ Implemented (returns lat/lng, address and a walking-directions URL; map rendering is a frontend concern) | `POST /api/location/update` |
-| FR7 – Push notifications for offers | ✅ Implemented as in-app notification records (Firebase Cloud Messaging integration deferred to Iteration 2) | `POST /api/location/update`, `GET /api/location/notifications` |
-| FR8 – Staff update menu/availability | ✅ Implemented | `POST /api/restaurants/:id/menu`, `PATCH /api/restaurants/:id/menu/:itemId` |
-| FR9 – Feedback and ratings | ✅ Implemented | `POST /api/feedback/:restaurantId`, `GET /api/feedback/:restaurantId`, `GET /api/feedback` |
-| FR10 – Owner analytics dashboard | ✅ Implemented | `GET /api/analytics/restaurants/:restaurantId` (staff/owner only) |
+| Customer | customer@smartdine.test | SmartDine-Demo26! |
+| Staff | staff@smartdine.test | SmartDine-Demo26! |
+| Owner | owner@smartdine.test | SmartDine-Demo26! |
 
-Security controls implemented to match the ICT307 design (Section 7.2):
-JWT auth (1hr expiry), bcrypt password hashing (cost factor 12), login
-lockout after 5 failed attempts, role-based access control (customer /
-staff / owner), and input validation on every write endpoint.
+These are public **local demonstration credentials**, not production accounts. Staff and owner are assigned to The Spice Tailor. Setup preserves existing data and generates private secrets in ignored `backend/.env`. The seeded customer displays Prajwal Shrestha; it is a separate local account from any personal account. Names are read from the authenticated profile, not hard-coded in pages.
 
-## Iteration 1, second pass — what changed and why
+## Features
+- Customer-only registration, login, persistent timed lockout and revocable one-hour sessions.
+- Saved preferences, explicit GPS action and selectable search areas.
+- Haversine geofencing and dietary-safe candidate filtering with six score contributions.
+- Per-venue walking directions, in-app offers and optional Web Push.
+- Photographic restaurant pages, full menus, persisted favourites and paginated reviews.
+- SQLite-backed cart, quantities/removal, server-priced pickup checkout, confirmation and private order history.
+- Assigned staff/owner order status controls: Placed, Confirmed, Preparing, Ready and Completed.
+- One effective rating per customer/restaurant.
+- Assigned-restaurant menu creation, editing, availability, deletion and scheduled promotions.
+- Owner metrics from actual recorded events, with UTC hourly activity.
+- Data export, offer preferences, history clearing and password-confirmed deletion.
 
-The first pass delivered FR1–FR8. This pass closes FR9 and FR10, fixes two
-defects found while reviewing the recommendation path, and adds an automated
-test suite.
+FR1–FR10 have browser workflows in the revised web scope. Real-device GPS and optional browser-push delivery remain to be verified. Views are engagement, not proven restaurant visits. Fixtures are fictional.
 
-**Defect: dietary requirements were captured but never applied.** `FR2` stored
-`dietary_req` on the preference record, but the scoring function weighted only
-proximity, cuisine and price. A customer who set a vegetarian requirement was
-still recommended venues that could not feed them. Dietary requirements are now
-a *hard exclusion* rather than a weak signal — the venue is removed from the
-result set, and the response reports what was excluded and why, so the decision
-is auditable rather than silent.
-
-**Defect: notification and impression records accumulated on every GPS ping.**
-A customer inside the geofence received a fresh notification row per location
-update, and every venue in range recorded a fresh recommendation impression.
-The first is a poor user experience; the second made the FR10 engagement rate
-meaningless, because impressions inflated without any new customer intent. A
-30-minute notification cooldown and a 10-minute impression de-duplication
-window now apply.
-
-**Scoring model rewritten and moved out of `utils/geo.js`.** Geometry and
-product policy were mixed in one file. Distance is a fact about the world;
-how much proximity should matter relative to cuisine or rating is a decision
-that changes independently and needs its own tests. The model is now a
-six-term weighted linear score in `services/scoringService.js`:
-
-| Term | Weight | Notes |
-|---|---|---|
-| Proximity | 35 | Linear decay to the edge of the discovery radius |
-| Cuisine match | 20 | Neutral 0.6 when no preference is set |
-| Dietary fit | 15 | Hard exclusion when incompatible |
-| Price band match | 10 | Distance between `$`…`$$$$` bands |
-| Customer rating | 15 | Bayesian-damped toward a 3.0 prior (FR9) |
-| Active promotion | 5 | Small nudge for a live offer |
-
-Weights total 100 and the total is asserted at module load, so an edit cannot
-silently rescale the score. Each response includes a `score_breakdown` naming
-every term's contribution, so the interface can explain *why* a venue was
-recommended — which is what section 7.1 of the design report commits to when it
-promises algorithmic transparency.
-
-**Rating feedback loop closed.** The `feedback` table existed in the Iteration 1
-schema but had no endpoints, so ratings could neither be submitted nor
-influence ranking. FR9 now writes ratings and FR5 consumes their aggregate.
-
-**Seed data expanded from one venue to six.** A recommendation engine ranking a
-list of one cannot demonstrate ranking. The seed now includes five competing
-Sydney CBD venues across different cuisines, price bands and dietary
-suitability. The Spice Tailor remains the pilot partner with its original
-coordinates and 200 m geofence.
-
-**Schema migration rather than a rebuild.** `schema.sql` uses
-`CREATE TABLE IF NOT EXISTS`, so new columns never reach a database file that
-already exists. `src/db.js` now inspects the live table definition and adds
-only what is missing, so an existing database is upgraded in place instead of
-being deleted — which would also destroy the recommendation history that the
-FR10 analytics reads from.
-
-**Automated tests and CI.** 25 unit tests over the scoring model and the
-geospatial helpers, using Node's built-in test runner so the project still has
-no test dependency. `.github/workflows/ci.yml` runs them on every push and pull
-request. Run locally with `npm test`.
-
-## Project structure
-
-```
-smartdine/
-├── .github/workflows/ci.yml      # Runs the test suite on every push and PR
-├── backend/
-│   ├── src/
-│   │   ├── app.js                # Express entrypoint
-│   │   ├── db.js                 # SQLite connection, migrations, seed data
-│   │   ├── middleware/auth.js    # JWT verification, RBAC
-│   │   ├── routes/               # auth, preferences, location, restaurants,
-│   │   │                         #   feedback (FR9), analytics (FR10)
-│   │   ├── services/             # Business logic, no Express or HTTP concerns
-│   │   │   ├── scoringService.js #   FR5 weighted relevance model
-│   │   │   └── analyticsService.js # FR10 aggregation
-│   │   └── utils/geo.js          # Haversine distance and geofence test
-│   ├── tests/                    # 25 unit tests (node:test, no dependencies)
-│   ├── db/schema.sql             # Matches the ERD from Assessment 3
-│   └── .env.example
-└── frontend/
-    └── index.html                # Minimal browser demo client (customer flow)
+## Architecture
+```text
+Browser HTML/CSS/JavaScript
+        |
+Same-origin JSON and HttpOnly session cookie
+        |
+Express routes -> authentication, role and venue checks
+        |
+Scoring / promotion / notification / analytics services
+        |
+SQLite: relational tables, constraints, indexes and migrations
 ```
 
-The `routes → services → db` split is deliberate. Route handlers deal only with
-HTTP concerns — parsing, validation, status codes. Services hold the business
-rules and are pure enough to unit test without starting a server, which is what
-makes `tests/scoring.test.js` possible. `db.js` is the only module that opens a
-database connection, so the MySQL migration planned for Iteration 2 touches one
-layer rather than the whole codebase.
+Node.js 24, Express 5, node:sqlite, bcryptjs, jsonwebtoken, express-validator, Helmet, express-rate-limit, web-push and Lucide. No React Native, MySQL, Redis, Python recommender or Firebase deployment is claimed.
 
-## Running locally
+## Verification
+```powershell
+npm test
+npm run test:performance
+npm audit --prefix backend
+```
+Latest saved local run: **128 passed, 0 failed**, including 36 unit tests and 92 HTTP/security tests. The earlier 82-test logs are retained as a baseline; `docs/evidence/final-tests.txt` contains the final run. Tests use isolated databases. The benchmark measures 200 requests each at six and 1,006 venues, with ten concurrent clients; it never modifies the demo database. See [testing report](docs/TESTING_REPORT.md) and [raw evidence](docs/evidence).
 
-```bash
-cd backend
-npm install
-cp .env.example .env     # Windows PowerShell: copy .env.example .env
-npm start                # or: node src/app.js
+GitHub Actions runs locked installation, tests, dependency audit and performance smoke verification on pushes/PRs. Read the actual run status; the badge alone is not an independent review.
+
+## Roles and security
+Public registration cannot select staff or owner. Privileged APIs require both a current database role and restaurant membership. Passwords use bcrypt cost 12; cookies are HttpOnly/SameSite Strict and Secure in production. JSON/origin checks, bounded input, rate limits, prepared SQL and CSP provide additional controls. Never commit .env, databases, JWT secrets, VAPID private keys or real user records.
+
+## Structure
+```text
+backend/
+  scripts/          setup and isolated benchmark
+  src/
+    app.js          Express and same-origin static server
+    config.js       validated environment
+    db.js           database, additive migration and fixtures
+    routes/         HTTP endpoints
+    middleware/     sessions, roles, restaurant ownership and validation
+    services/       scoring, promotion, push and analytics
+    utils/geo.js    Haversine helpers
+  db/schema.sql
+  tests/
+frontend/
+  *.html            home, login, registration, customer, staff, owner, account
+  css/styles.css
+  js/               shared API helper and role-specific workflows
+  assets/
+  sw.js             optional push service worker
+docs/               report source, guides and real evidence
+.github/workflows/tests.yml
 ```
 
-Run the test suite:
+## Documentation
+- [User Guide](docs/USER_GUIDE.md)
+- [Deployment and configuration](docs/DEPLOYMENT_GUIDE.md)
+- [API reference](docs/API.md)
+- [Design revisions](docs/DESIGN_REVISIONS.md)
+- [Security and privacy](docs/SECURITY_AND_PRIVACY.md)
+- [Testing report](docs/TESTING_REPORT.md)
+- [Human UAT protocol](docs/UAT_PLAN.md)
+- [Ten-minute demonstration](docs/DEMO_SCRIPT.md)
+- [Lecturer questions](docs/Q_AND_A.md)
+- [Evidence checklist](docs/EVIDENCE_CHECKLIST.md)
+- [Final-delivery traceability](docs/JIRA_FINAL_TASKS.md)
+- [Tool-use declaration](docs/AI_TOOL_USE_DECLARATION.md)
 
-```bash
-cd backend
-npm test                 # 25 tests, no server or database required
-```
+## GitHub and Jira
+Repository: https://github.com/arlpramesh7/ICT308
+Jira: https://sajal-niroula.atlassian.net/jira/software/projects/SMAR/boards/2
 
-Serve the frontend over HTTP rather than opening the file directly — Chrome
-blocks requests from a `file://` page to `localhost`, so the buttons silently
-do nothing:
+Preserve history, use real SMAR keys in logical commits, verify changes before completion, and leave human acceptance/review open until actually performed. Historical contributors are Prajwal Shrestha, Sajal Niroula, Mandeep Acharya and Pramesh Aryal. Final contribution percentages must be confirmed by the team, not inferred from earlier reports.
 
-```bash
-npx serve frontend       # then open the http://localhost:3000 address it prints
-```
+## Ordering scope
+Pickup only, one restaurant per cart, maximum 20 per item and 50 units per order. Menu prices include applicable taxes; free-text promotions are not automatically applied and are confirmed separately at pickup. The server rechecks current availability, opening hours, cart revision and prices. Optional phone accepts blank or standard Australian mobile/landline formatting, with inline and server validation. Switching restaurants requires Cancel / Clear cart & add item confirmation; revision-checked transactional replacement preserves the old cart on failure. The badge counts total item quantity. Idempotency keys prevent duplicate orders on retry. Ordered names/prices are snapshots and survive menu changes. No money is collected and no order is sent to an external business. The checkout and confirmation state this explicitly.
 
-The API runs on `http://localhost:4000`. Health check: `GET /api/health`.
-
-## Notes on production vs. prototype
-
-- The design doc specifies **MySQL 8.0**; this prototype uses **SQLite**
-  via Node's built-in `node:sqlite` module (Node 22.5+) for a zero-config
-  local demo with no native compilation step. The schema in
-  `db/schema.sql` mirrors the ERD 1:1, so migrating to MySQL for the final
-  submission is a matter of swapping the driver and minor syntax changes
-  (`AUTOINCREMENT` → `AUTO_INCREMENT`, etc.) — worth doing before Assessment 2.
-- The design doc specifies **React Native** for the mobile client; this
-  demo uses a plain HTML/JS page so the customer flow can be demonstrated
-  without a mobile build pipeline. Recommend porting this to the actual
-  React Native screens (from the Assessment 3 wireframes) before Assessment 2.
-- Push notifications are stored as DB records rather than sent via Firebase
-  Cloud Messaging — real FCM wiring is a reasonable Iteration 2 task.
-
-## Suggested Jira sprint 1 backlog (for your board)
-
-- SD-1 Set up GitHub repo + branch protection
-- SD-2 Implement user auth (FR1)
-- SD-3 Implement preferences (FR2)
-- SD-4 Implement geofencing + recommendation engine (FR3, FR4, FR5)
-- SD-5 Implement notification trigger (FR7)
-- SD-6 Implement staff menu management (FR8)
-- SD-7 Write Iteration 1 technical report
-- SD-8 Record prototype demo video
-Updated project documentation and iteration requirements.
+## Limitations
+This is a loopback educational deployment, not a production-hosted service. SQLite files are not encrypted by the application. No production uptime or capacity guarantee, native background GPS, verified physical visits, real payments, external restaurant fulfilment, delivery tracking, password-recovery service or universal accessibility certification is claimed. Optional push depends on browser permission, provider availability and unverified device delivery. Human UAT and independent review remain separate release obligations.

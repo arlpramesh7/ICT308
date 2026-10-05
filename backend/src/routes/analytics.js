@@ -7,7 +7,7 @@
  */
 const express = require('express');
 const { param, validationResult } = require('express-validator');
-const { requireAuth, requireRole } = require('../middleware/auth');
+const { requireAuth, requireRole, requireVenue } = require('../middleware/auth');
 const { dashboard } = require('../services/analyticsService');
 
 const router = express.Router();
@@ -16,8 +16,9 @@ const router = express.Router();
 router.get(
   '/restaurants/:restaurantId',
   requireAuth,
-  requireRole('staff', 'owner'),
+  requireRole('owner'),
   [param('restaurantId').isInt({ min: 1 })],
+  requireVenue('restaurantId'),
   (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
