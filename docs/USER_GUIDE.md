@@ -47,8 +47,6 @@ Each privileged account has exactly one restaurant membership. Setup creates/rec
 ### Registration and login
 From Home, choose Register. Enter a unique name of 3–50 characters, valid email and a password of at least 10 characters and no more than 72 bytes; confirm the password and acknowledge the privacy notice. Successful registration opens Discover. No staff or owner selector is offered. Existing users choose Log in. Incorrect credentials show an error; five failures lock the account for 15 minutes. Sessions last one hour. Log out before switching roles.
 
-![Current login page](screenshots/59-release-login.jpg)
-
 ### Preferences
 Select Indian, Vegetarian, $$ and a radius of 2 km, then Save preferences. The confirmation indicates database persistence. Reloading retains the values. Any cuisine/budget and No restriction remove those preferences; vegan is a distinct restriction. Supported radius is 0.1–50 km. Venue-supplied flags do not guarantee allergy safety or prevent cross-contamination.
 
@@ -66,14 +64,10 @@ Each venue shows cuisine, price band, distance, estimated straight-line walking 
 
 Select vegan and save again. Only compatible venues remain; excluded venue names are shown below the results. Radius and dietary restrictions exclude candidates; cuisine and budget rank them and do not guarantee only exact matches. Search matches restaurant names/cuisines. No minimum-rating filter is implemented. A no-results message is expected at an out-of-area search location. The refresh icon repeats the current search.
 
-![Current recommendation explanation](screenshots/60-release-score.jpg)
-
 ### Restaurant pages, favourites and reviews
 Select a restaurant photograph, name or View restaurant. The dedicated page shows cuisine imagery, address, opening hours, pickup estimate, full grouped menu, prices and dietary flags. Unavailable items are labelled and have no Add to Cart control. The heart turns red and filled when saved; select it again to remove. Reloading and signing back into the same account preserve the choice. Saved restaurants on Discover filters your saved list, including venues outside the current search radius.
 
 Browse reviews with the previous/next arrows. Your own existing review is loaded into the rating form; saving updates the effective vote. Initial sample reviews are disclosed in the privacy notice. Directions opens an external Google Maps route. The detail page supplies the venue destination; opening a link transmits its coordinates to Google. SmartDine's approximate walk time is not a road-network route estimate.
-
-![Photographic discovery](screenshots/28-discovery-photographs.jpg)
 
 ### Cart and pickup checkout
 1. On the restaurant menu, select the plus button for an available item. The cart icon shows the number of units. Your account's cart is saved in SQLite, not shared with another customer.
@@ -84,9 +78,6 @@ Browse reviews with the previous/next arrows. Your own existing review is loaded
 6. Orders lists your persisted order history. Open an order and use Refresh order status to see Placed, Confirmed, Preparing, Ready or Completed. Other customers cannot open it. Staff/owners of the assigned restaurant update the status.
 
 If prices, quantities or availability changed after checkout loaded, return to Cart, review the current total and start checkout again. A closed restaurant or unavailable item prevents ordering. Confirmation is an academic application record, not a paid purchase or a promise of fulfilment by a real restaurant.
-
-![Cart and totals](screenshots/32-cart.jpg)
-![Verified customer order after restaurant fulfilment](screenshots/57-release-customer-completed.jpg)
 
 ### Offers and ratings
 An active promotion inside its geofence creates an in-app offer. Your offers shows venue, message, time and unread/read state. The check icon marks it read. Refreshing location within 30 minutes does not create another offer for the same venue. Browser notification permission is not needed for in-app offers.
@@ -101,22 +92,15 @@ Choose Add item. Enter name, description, category and a price from 0 to 9999 AU
 
 The pencil icon edits an existing item. The availability checkbox enables/disables it without deleting it. The delete icon opens confirmation before permanent removal. Prefer disabling when an item may return. Recent changes records menu and promotion actions. Every server request checks both staff/owner role and venue assignment; changing an ID does not grant access.
 
-![Restaurant-scoped Green Fork staff menu](screenshots/52-green-fork-staff.jpg)
-![Add menu item](screenshots/12-add-menu-item.jpg)
-
 Open the Promotion tab. Enter offer text, local start/end dates and Enable promotion. The end must follow the start; an enabled offer needs both dates and nonempty text. Save promotion persists it. Future and expired offers do not receive a recommendation boost or trigger notifications.
 
 ### Pickup orders
 The Orders navigation opens only orders for an assigned restaurant. Read items, quantities, pickup name, optional phone/notes and total. Mark Confirmed, then Preparing, Ready and Completed in sequence. Refresh before retrying a stale status. Changes persist and have audit entries. These controls do not process payments or transmit orders outside SmartDine.
 
-![Staff pickup orders](screenshots/36-staff-orders.jpg)
-
 ## 8 Owner workflow
 Log out and sign in as owner. Analytics displays the assigned restaurant's actual recommendation impressions, views, engagement percentage, average rating, rating count and in-app offers created. Refresh reads the database again. Activity by hour uses UTC and combines all recorded dates; recent feedback has no customer identity field.
 
 An impression is a venue surfaced to a customer, deduplicated for 10 minutes. A view is an opened/interested recommendation, not a verified physical visit. Engagement equals viewed impressions divided by impressions. A clean database initially shows zero activity and no rating. Perform the customer workflow first to generate genuine demonstration events. Manage menu opens the same protected menu interface. Owners also have the assigned-restaurant Orders screen and can advance pickup status.
-
-![Restaurant-scoped Green Fork owner analytics](screenshots/53-green-fork-owner.jpg)
 
 ## 9 Account and privacy
 Account shows the authenticated profile. Customers may disable nearby promotional offers; doing so also removes stored push subscriptions. Export my data downloads JSON containing the customer's own profile, preferences, favourites, cart, orders, ratings and activity without password hashes, retry keys or private keys.
@@ -127,8 +111,6 @@ Clear recommendation history requires confirmation and removes recommendations/o
 
 ## 10 Security demonstration
 While logged in as customer, open /owner.html or /staff.html. The interface displays Access denied. Explain that this screen is only user feedback: API tests separately demonstrate HTTP 403 for customer access and unassigned venue mutation. Public registration rejects owner/staff requests even if a client manually supplies a role.
-
-![Customer access denied](screenshots/15-access-denied.jpg)
 
 ## 11 Troubleshooting
 | Symptom | Action |

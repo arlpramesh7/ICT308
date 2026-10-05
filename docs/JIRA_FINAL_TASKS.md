@@ -41,7 +41,7 @@ Existing issues were reused where they matched real work. Descriptions and accep
 ## Sprint handling
 The existing active Sprint 2 and backlog were inspected first. Sprint 40, named Sprint 3 - Final Delivery, groups final work. Jira limited names to thirty characters. This is a future sprint container: no historical dates, completion report or velocity were fabricated. The backlog hides completed future-sprint items; the issue records above retain their real Done statuses. Native mobile, MySQL and Firebase proposals remain deferred rather than being marked implemented.
 
-![Final delivery backlog during document review](screenshots/21-jira-backlog.jpg)
+The status table above records the document-review checkpoint; use the [SMAR board](https://sajal-niroula.atlassian.net/jira/software/projects/SMAR/boards/2) for current issue statuses.
 
 ## New commits at this snapshot
 - 8a7de13139980ddafb86e693fb149c4b0a1b410e: SMAR-36 Secure roles sessions and restaurant-scoped API access

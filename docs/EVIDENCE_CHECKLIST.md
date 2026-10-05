@@ -1,45 +1,29 @@
 # SmartDine Evidence Checklist
 
-Working-feature captures include `28-discovery-photographs.jpg`, `29-discovery-mobile.jpg`, `31-review-submission.jpg` and 30-40 ordering/role evidence. All six cuisine assets loaded. Current **145-pass** output is `evidence/final-tests.txt`. Latest account, full-order and responsive evidence is described below; earlier captures remain historical, not identical current UI certification.
+Screenshot files were removed from the repository during documentation cleanup. The application image assets remain unchanged. The retained records below describe actual verification; they are not human UAT or independent approval.
 
-The JPEG files below are genuine browser captures under docs/screenshots. Screenshots establish the displayed state at capture time; the tests and database evidence establish behavior. They are not human UAT or independent review. Different screenshots may show different counts because real demo actions occurred between captures.
+| Evidence | Recorded scope |
+|---|---|
+| [Final test output](evidence/final-tests.txt) | Release run: 145 passed, zero failures/cancellations/skips; 36 unit, 5 seed/persistence and 104 HTTP/security |
+| [Browser QA](evidence/release-browser-qa.json) | Customer journey, complete $18.00 pickup lifecycle, blank/valid/invalid phones, cart switching, favourites/reviews, privacy safeguards, loaded application imagery and ten measured 390px surfaces |
+| [Restaurant-account browser checks](evidence/restaurant-account-browser.json) | Twelve named staff/owner logins with intended restaurant assignments |
+| [Performance results](evidence/performance.json) | Actual workload/environment, 400 successful requests and benchmark limitations |
+| [Current clean-install record](evidence/clean-install-final.json) | Isolated installation and repeated setup, all fifteen logins, restaurant assignment and other-venue denial |
+| [Dependency audit](evidence/dependency-audit.json) | Recorded backend audit with zero vulnerabilities |
+| [Historical test output](evidence/tests.txt) and [XML](evidence/tests.xml) | Actual 82-test baseline, not the latest suite count |
+| [Historical clean-install record](evidence/clean-install.json) | Earlier isolated clone verification |
+| [Merged release PR](https://github.com/arlpramesh7/ICT308/pull/3) | Normal merge and real release commits; no independent approval implied |
+| [Merged-main CI](https://github.com/arlpramesh7/ICT308/actions/runs/37283548029) | Successful verification for release commit 462b9b239b09a5105abcf9558cdd8969b9447f57 |
+| [Jira traceability](JIRA_FINAL_TASKS.md) | Document checkpoint and links to current issue records |
 
-| File or evidence | State | Report placement |
-|---|---|---|
-| 01-login.jpg | Captured | Appendix A registration/login |
-| 02-registration.jpg | Captured; subsequent customer redirect observed | Appendix A registration |
-| 03-customer-mobile.jpg | Captured at 390 px; no horizontal overflow | Appendix B browser checks |
-| 05-restaurant-menu.jpg | Captured | Appendix A menus |
-| 06-score-breakdown.jpg | Captured | Section 2.3 discussion and Appendix A |
-| 07-dietary-and-offer.jpg | Captured | Appendix A dietary filtering and offers |
-| 09-directions.jpg | Google Maps opened in walking mode for selected simulated coordinates | Appendix B directions |
-| 10-feedback.jpg | Captured form; save verified afterward | Appendix B feedback evidence |
-| 11-staff-dashboard.jpg | Captured | Appendix A staff workflow |
-| 12-add-menu-item.jpg | Captured | Appendix A adding an item |
-| 13-edit-menu-item.jpg | Captured | Appendix B staff edit evidence |
-| 13-promotion.jpg | Captured | Appendix B promotion evidence |
-| 14-owner-analytics.jpg | Captured; values came from actual demo activity | Appendix A owner workflow |
-| 14-owner-mobile.jpg | Captured narrow layout, 748 px; not a 390 px certification | Appendix B responsive evidence |
-| 15-access-denied.jpg | Captured | Appendix A security demonstration |
-| 18-ci-pass.jpg | Captured | Appendix D CI |
-| 19-github-commits.jpg | Captured comparison showing four real implementation commits | Appendix D GitHub |
-| 20-pull-request.jpg | Actual PR 2 created through authenticated browser | Appendix D pull request |
-| 21-jira-backlog.jpg | Actual future Sprint 3 container; SMAR-39 In Review and SMAR-40 To Do at capture | Appendix D Jira |
-| 25-account.jpg | Captured | Appendix A account/privacy |
-| 26-no-results.jpg | Captured | Appendix B empty-state check |
-| 27-notification-opt-out.jpg | Saved preference verified after reload | Appendix B privacy |
-| evidence/tests.txt and tests.xml | Actual 82-pass baseline output | Appendix B automated results |
-| evidence/performance.json | Actual measured workload/environment | Appendix B performance results |
-| evidence/clean-install.json | Actual isolated clone verification | Appendix B deployment check |
+## Evidence requiring an external or human action
 
-## Evidence still requiring an external or human action
-- Genuine independent review: PR 2 now exists and its screenshot is captured, but no independent approval is claimed.
-- Lecturer access: lecturer must open the repository and SMAR board with their own authorized account.
-- Human UAT: complete UAT_PLAN.md with an actual participant, real observations and consent. Screenshot only with agreement; do not prefill a pass or signature.
-- Actual GPS and optional push: requires a supported device and explicit browser permissions. Explain that named search areas use fixed coordinates, not detected GPS.
+- Genuine independent review: merged pull requests do not imply independent human approval.
+- Lecturer access: the lecturer must open the repository and SMAR board with their own authorized account.
+- Human UAT: complete [UAT_PLAN.md](UAT_PLAN.md) with an actual participant, real observations and consent. Do not prefill a pass or signature.
+- Actual GPS and optional push: require a supported device and explicit browser permissions. Named search areas use fixed coordinates, not detected GPS.
 - Sprint completion/report: Sprint 3 is a future final-delivery container while Sprint 2 remains active; no completed sprint or velocity claim is made.
 
-## Capture guidance
-For a live terminal demonstration, run npm test and capture the complete summary if requested; the committed text/XML logs already preserve the actual result. For performance, show the JSON alongside the runner and its environmental limitations. For Jira, capture the current final-delivery backlog/statuses after verification; distinguish unfinished SMAR-40 from completed implementation. Never expose .env, tokens, passwords belonging to real accounts or private participant information.
+## Verification guidance
 
-Earlier UX evidence: 42 phone inline error/focus; 43 cart confirmation; 44-47 mobile customer views; 48-49 matching Completed status; 50 PR verification. Current captures: 51 Seoul staff assignment, 52 Green Fork staff, 53 Green Fork owner, 54 actual 390px checkout, 55 actual 390px confirmation, 56 actual 390px owner analytics, 57 desktop customer Completed order. `restaurant-account-browser.json` records twelve named logins. `release-browser-qa.json` records the complete $18.00 order lifecycle, valid/blank/invalid phones, reviews/favourites/privacy safeguards and ten measured mobile surfaces. Current clean installation is `clean-install-final.json` (all fifteen accounts); audit is `dependency-audit.json` (zero vulnerabilities); performance.json records 400 successful requests. Latest suite: 145 pass, 0 fail, 0 skip. Human UAT/signatures remain unfilled.
+For a live terminal demonstration, run npm test and show the complete summary; the committed text/XML logs preserve historical results. For performance, show the JSON alongside the runner and its environmental limitations. For Jira, show current final-delivery statuses and distinguish unfinished SMAR-40 from completed implementation. Never expose .env, tokens, real account passwords or private participant information. Human UAT/signatures remain unfilled.
