@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-10-04T15:09:15.799Z",
+  "capturedAt": "2026-10-05T07:24:23.983Z",
   "node": "v24.19.0",
   "platform": "win32",
   "release": "10.0.26200",
@@ -15,12 +15,12 @@
       "warmup": 10,
       "successful": 200,
       "failures": 0,
-      "p50Ms": 12.82,
-      "p95Ms": 17.5,
-      "p99Ms": 19.12,
-      "maxMs": 20.09,
-      "elapsedMs": 264.48,
-      "requestsPerSecond": 756.2,
+      "p50Ms": 16.08,
+      "p95Ms": 21.8,
+      "p99Ms": 25.15,
+      "maxMs": 26.19,
+      "elapsedMs": 341.71,
+      "requestsPerSecond": 585.29,
       "errors": []
     },
     {
@@ -30,12 +30,12 @@
       "warmup": 10,
       "successful": 200,
       "failures": 0,
-      "p50Ms": 108.49,
-      "p95Ms": 123.99,
-      "p99Ms": 147.1,
-      "maxMs": 147.56,
-      "elapsedMs": 2242.52,
-      "requestsPerSecond": 89.19,
+      "p50Ms": 637.19,
+      "p95Ms": 728.62,
+      "p99Ms": 754.9,
+      "maxMs": 1079.44,
+      "elapsedMs": 13052.45,
+      "requestsPerSecond": 15.32,
       "errors": []
     }
   ]
