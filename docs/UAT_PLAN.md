@@ -14,7 +14,7 @@ Consent to record observations: __________________
 |---|---|---|---|
 | UAT01 | Register and log in | Customer account, no privileged role selector; useful invalid-input feedback | Pending |
 | UAT02 | Save Indian/vegetarian/$$/2 km preferences, reload | Values persist | Pending |
-| UAT03 | Select Town Hall then pilot demo location | Clear simulated labels; distance/geofence change | Pending |
+| UAT03 | Select Town Hall then Spring Street search area | Understand fixed search coordinates versus actual GPS; distance/geofence change | Pending |
 | UAT04 | Explain highest recommendation | Six backend contributions understandable | Pending |
 | UAT05 | Select vegan | Incompatible venues excluded and identified | Pending |
 | UAT06 | Read offer, refresh location repeatedly | Read state persists; no duplicate spam | Pending |
@@ -26,6 +26,10 @@ Consent to record observations: __________________
 | UAT12 | Customer opens owner page | Access denied; API protection explained separately | Pending |
 | UAT13 | Export data and disable offers | Readable export; preference persists | Pending |
 | UAT14 | Use narrow screen and keyboard | Labels, controls and dialogs usable without obscured text | Pending |
+| UAT15 | Open a restaurant; save/un-save then reload | Filled red heart and persistence are understandable | Pending |
+| UAT16 | Browse all reviews and update own rating | Pagination and current vote are understandable | Pending |
+| UAT17 | Add available items; quantity/remove; checkout pickup | Totals correct; unavailable/closed items blocked; no-payment notice understood | Pending |
+| UAT18 | View own confirmation/history and restaurant status | Unique ID and persistent status; other account cannot access | Pending |
 
 Overall decision: Accept / Accept with defects / Reject
 Blocking defects and references: __________________

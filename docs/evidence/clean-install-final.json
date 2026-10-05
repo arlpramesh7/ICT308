@@ -1,0 +1,33 @@
+{
+  "capturedAt": "2026-10-05T05:20:23.726Z",
+  "commit": "5a9dda7d891ce7ed16b36123b9547cc71b0f99f5",
+  "node": "v24.19.0",
+  "commands": [
+    "git clone --local --branch feature/SMAR-36-final-delivery",
+    "npm ci",
+    "npm run setup",
+    "npm run setup"
+  ],
+  "result": "PASS",
+  "checks": [
+    "Locked install and repeated setup succeeded",
+    "Three intended local role logins worked",
+    "Authenticated display name correct",
+    "Customer cart initialized empty",
+    "All ordering pages returned HTTP 200",
+    "Repeated setup preserved exactly three active accounts and six inactive review fixtures"
+  ],
+  "counts": {
+    "users": 9,
+    "activeUsers": 3,
+    "restaurants": 6,
+    "memberships": 2,
+    "reviews": 36
+  },
+  "roles": [
+    "customer",
+    "staff",
+    "owner"
+  ],
+  "logs": "SmartDine running at http://127.0.0.1:4012\n"
+}

@@ -5,7 +5,7 @@ Use these answers to prepare, then demonstrate the relevant code yourself. They 
 ## Architecture and deployment
 
 ### 1 What problem does SmartDine solve
-It helps customers compare nearby venues against cuisine, dietary and budget preferences, while staff maintain menus and owners see recorded engagement. It is not an ordering or payment platform.
+It helps customers compare nearby venues against cuisine, dietary and budget preferences, place persisted pickup orders, and follow status. Staff maintain menus and process assigned orders; owners see recorded engagement. It does not collect online payments or fulfil orders outside SmartDine.
 
 ### 2 What is the final architecture
 A same-origin HTML/CSS/JavaScript browser client communicates with a modular Express API. Middleware enforces authentication and venue authorization, services calculate scores and analytics, and SQLite stores relational data.
@@ -125,7 +125,7 @@ The customer's discovery radius selects candidate venues. Each restaurant's geof
 An indexed latitude range narrows the candidates before exact Haversine filtering. It is a conservative prefilter, not a complete spatial index; measured behavior should guide any future optimization.
 
 ### 39 Why provide simulated locations
-They make inside/outside-geofence and empty-result cases reproducible without travelling. They are labelled simulated, use valid coordinates and are not represented as device GPS evidence.
+They make inside/outside-geofence and empty-result cases reproducible without travelling. The Search area selector uses fixed valid coordinates; these are not represented as detected device GPS evidence.
 
 ### 40 How do notifications avoid spam
 The backend keeps a thirty-minute per-user/per-venue offer cooldown and respects the user's notification preference. In-app records work without browser push permission. Recommendation impressions have a separate ten-minute deduplication interval.
@@ -139,7 +139,7 @@ Profile, preferences, feedback and restaurant-associated activity are stored. Ra
 ## Testing and project evidence
 
 ### 43 What is the difference between unit and integration testing
-Unit tests call individual geometry/scoring calculations. HTTP integration tests start the actual Express application and exercise middleware, routes and database effects together. The saved suite contains 33 unit and 49 HTTP tests, all passing.
+Unit tests call individual geometry/scoring calculations. HTTP integration tests start the actual Express application and exercise middleware, routes and database effects together. The current saved suite contains 36 unit and 92 HTTP/security tests, all passing. The earlier 82-test result remains historical evidence.
 
 ### 44 What regression evidence is strongest
 Tests specifically repeat previously unsafe cases: privileged registration, unassigned venue writes, unsupported diets, repeated offers and duplicate effective ratings. A passing regression protects a stated behavior, not all possible behaviors.
@@ -154,10 +154,13 @@ Two isolated local scenarios each ran 200 authenticated requests with ten concur
 GitHub Actions installs locked dependencies on Node.js 24, runs the tests, audits backend dependencies and runs the isolated performance smoke test. The first successful run is 37212127823. Green CI does not replace human review.
 
 ### 48 How do GitHub and Jira connect
-Real SMAR issue keys appear in new commit messages on feature/SMAR-36-final-delivery. Existing issues 33-35 were reused and 36-40 record actual new work. Status changes reflect evidence; no dates, approvals or historical activity are fabricated.
+Real SMAR issue keys appear in new commit messages on feature/SMAR-36-final-delivery. Existing issues 33-35 were reused; 36-44 and existing SMAR-7 trace actual final work. Status changes reflect evidence; no dates, approvals or historical activity are fabricated.
 
 ### 49 How should I explain my contribution
 Use the earlier report and actual commits to describe what you really did in FR5, FR9, FR10, unit testing, defects, database work and prototype testing. Then explain the final code's behavior. Do not infer personal authorship from an issue assignee or repeat an unconfirmed percentage; disclose assistance in the designated declaration.
 
-### 50 What are the next priorities
-Complete human UAT and independent review, verify teaching-team access, test real-device GPS/push, and establish secure production provisioning and backup restoration. Favourites, ordering, payments, native tracking and production uptime are not claimed as delivered requirements.
+### 50 How does ordering avoid incorrect totals and duplicate orders
+The server reads current menu prices, uses integer cents, validates the cart revision and availability/opening hours, then writes order/item snapshots and clears the cart in one SQLite transaction. A UUID retry key is unique per customer; retry returns the original order. Staff/owner status changes require restaurant membership and the next sequential stage. No money is collected.
+
+### 51 What are the next priorities
+Complete human UAT and independent review, verify teaching-team access, test real-device GPS/push, and establish secure production provisioning and backup restoration. Favourites and persisted pickup ordering are delivered. Real payments, external fulfilment, delivery tracking, native background tracking and production uptime are not claimed.

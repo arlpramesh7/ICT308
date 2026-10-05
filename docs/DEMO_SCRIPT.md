@@ -1,34 +1,31 @@
-# SmartDine ten minute demonstration
+# SmartDine Ten Minute Demonstration
 
-## Rehearsal setup
-Run npm ci, npm run setup and npm start before the session. Keep a second terminal at the repository root for npm test. Open SmartDine, GitHub Actions and Jira in separate tabs. Use only fictional/demo data. Verify the pilot offer dates and customer notification preference. Use an existing in-app offer if cooldown suppresses a new one; never pretend suppression is a fault or a fresh delivery.
+## Rehearsal Setup
+Run npm ci, npm run setup and npm start before the session. Open http://localhost:4000, PR #2, Actions and Jira. Rehearse with the three local setup accounts listed in README. Keep npm test and the raw evidence ready. Use fictional data and named search areas; actual GPS and optional push are not needed for this path.
 
-Keep the latest raw test log and screenshots locally as a fallback, but show live behavior first. Do not depend on GPS permission or optional push for the ten-minute path. Rehearse role changes using the three published local demo accounts. Prepare an unused item name and registration email. Do not delete a real/team account in the demonstration.
+Check Sydney opening hours (11 am-10 pm), offer dates and notification preference before presenting. Cart supports one restaurant; begin with an empty cart. Do not delete real/team accounts, bypass lockout or pretend a suppressed offer is new.
 
-| Time | Exact action | Suggested explanation |
+| Time | Action | Explanation |
 |---|---|---|
-| 0:00–0:45 | Open Home | SmartDine helps a diner find suitable nearby restaurants rather than ranking distance alone. These are fictional Sydney CBD examples. |
-| 0:45–1:20 | Show architecture in README | One Express process serves the responsive client and JSON API. SQLite stores users, venues, preferences and engagement. Services separate scoring from HTTP handling. |
-| 1:20–2:05 | Log in as customer; show Register briefly only if time permits | Registration always creates a customer. The server decides roles; there is no owner selector. Sessions expire and can be revoked. |
-| 2:05–3:00 | Save Indian, Vegetarian, $$, 2 km; choose Town Hall then pilot | Preferences persist. Both positions are labelled simulations. Discovery radius differs from the 200 m pilot geofence. |
-| 3:00–3:30 | Change to Vegan and save | Incompatible venues are excluded, not merely penalised. Venue flags are not allergy guarantees. |
-| 3:30–4:30 | Expand Why this recommendation? | These six numbers come from the backend. The weights are 35, 20, 15, 10, 15 and 5. Ratings use a prior to moderate small samples. |
-| 4:30–5:00 | Open View menu, then close | Available items come from SQLite. Opening a venue records engagement against the latest recommendation. |
-| 5:00–5:45 | Show Your offers and Directions | In-app offers work without push permission. Repeats are suppressed for 30 minutes. Directions uses this selected venue and sends demo coordinates to Google. |
-| 5:45–6:30 | Save rating 4 with a labelled demo comment | The latest rating replaces the customer's effective previous vote. It feeds scoring and analytics without inflating counts. |
-| 6:30–7:30 | Log out; staff login; add item, edit price and disable | FR8 now has a complete UI. Every change also checks restaurant assignment on the server. Invalid prices are rejected. |
-| 7:30–8:20 | Owner login; show analytics; mention customer /owner.html denial screenshot if switching is slow | These counts come from our actions. Views are not verified physical visits. Owners can read only assigned venues. |
-| 8:20–9:15 | Run npm test; show real Actions run | The suite isolates its data and checks successful and denied behavior. Read the live pass/fail result, not a memorised number. The saved baseline is 82/82. |
-| 9:15–10:00 | Show Jira final-delivery issues and commit links | Real issues link to real changes. Native mobile and larger infrastructure were deferred for a reproducible web scope. Human UAT/review status is reported honestly. |
+| 0:00-0:45 | Open SmartDine and README architecture | Explainable nearby dining, one Express process, SQLite and fictional fixtures. |
+| 0:45-1:20 | Customer login; briefly show Register | Registration creates customers only; privileged roles come from controlled local setup. |
+| 1:20-2:15 | Save Indian/Vegan/$$/2 km; Town Hall then Spring Street | Persistence, hard dietary exclusions, search area versus GPS, discovery radius versus 200 m geofence. |
+| 2:15-2:45 | Expand recommendation explanation; show stored offer | Six backend contributions; 30-minute offer cooldown. |
+| 2:45-3:45 | Open restaurant, save/un-save, browse reviews, show own rating form | Full menu, imagery, unavailable state, persistent favourites and one effective review. |
+| 3:45-5:30 | Add available dish, open cart, quantity +/- and remove a second item; checkout/place order | Server-owned integer-cent totals, pickup only, explicit no-payment notice, unique confirmation and private history. |
+| 5:30-7:00 | Staff login; edit/disable a menu item; show Promotion; open Orders and advance status | FR8 UI, venue assignment checks, persisted/audited order stages. Keep menu data usable for later demonstration. |
+| 7:00-8:15 | Owner login; refresh analytics and show order status controls | Actual recorded impressions/views/ratings; engagement is not a physical visit. Owner can manage only assigned venues. |
+| 8:15-9:00 | Run npm test; show latest green Actions run | 128-test saved result; read the actual live result. Isolated fixtures do not erase demonstration data. |
+| 9:00-10:00 | Show PR #2, real commits and Jira status | No fabricated review/contributions. Human UAT/review remains separate. Real payments, delivery, native tracking and production hosting are outside scope. |
 
-## Five minute Q and A
-Answer the precise question first, then identify the relevant file and evidence. Do not claim machine learning, encrypted SQLite, production deployment, guaranteed push delivery or verified customer visits. For an unverified result, state the limitation and the test needed.
+## Five Minute Discussion
+Answer the question first, identify its implementation and evidence, then state limitations. Review Q_AND_A.md, including ordering transactions, revision validation, retries and snapshot prices. No machine learning, encrypted SQLite, production uptime, guaranteed push delivery or verified visits is claimed.
 
-Useful files: backend/src/services/scoringService.js; backend/src/routes/feedback.js; backend/src/services/analyticsService.js; backend/src/middleware/auth.js; backend/tests/api.test.js; backend/scripts/performance.js.
-
-## Recovery options
-- Login locked: wait for the deadline; switch to another permitted demo role, do not weaken lockout.
-- GPS denied: use a labelled simulated location.
-- No new offer: show stored offer and explain cooldown; check promotion dates and preference.
-- Internet unavailable: core local workflow still runs; show saved CI evidence with its recorded run URL.
-- Unexpected defect: record it truthfully, show unaffected features and explain the diagnostic path.
+## Recovery
+- Closed venue: present the genuine closed-state validation and arrange the live ordering demonstration during published opening hours; do not bypass it.
+- Changed price/unavailable item: return to cart and review before a fresh checkout.
+- Login locked: wait fifteen minutes or use another permitted role; do not weaken security.
+- GPS denied: choose a named search area.
+- No new offer: explain cooldown and show a stored offer.
+- Internet unavailable: local application still works; show timestamped saved CI evidence.
+- Unexpected defect: record it honestly and show unaffected workflows.

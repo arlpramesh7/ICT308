@@ -1,6 +1,24 @@
 # Testing report
 
-## Verified results
+## Latest Regression Run
+
+After complete pickup ordering and follow-up corrections, **128 tests passed**, with zero failures, cancellations or skips in **3.883 seconds**. Raw output: `evidence/final-tests.txt`. The earlier 82-test results below remain a historical baseline. Added suites contain five catalogue, seven favourite, five review and twenty-five ordering tests and three phone-rule unit tests. The current total is 36 unit and 92 HTTP/security tests. See [DELIVERY_UPDATE.md](DELIVERY_UPDATE.md) for browser checks. Human UAT remains unsigned.
+
+Ordering tests cover integer-cent totals, price spoofing, invalid quantities, unavailable/inactive items, one-restaurant carts, account isolation, stale cart/price rejection, closed restaurants, transactional checkout, unique order numbers, idempotent retry, snapshots surviving menu changes/deletion, scoped staff/owner access, sequential audited status updates, privacy export and account-deletion cascades.
+
+Browser QA placed order SD-20261005-4BBCBC85 at $22.50, after exercising increment/decrement, removal and refresh persistence. Staff advanced it to Confirmed and Preparing; owner advanced it to Ready and Completed. Seeded customer placed SD-20261005-2AF92E03 at $19.00 on mobile. Its order persisted after a real server restart; attempting the other customer's order displayed Order not found. Cart, checkout and confirmation at 390 px had no horizontal overflow or reported console errors. All three setup credentials authenticated successfully. Staff menu save, availability enable/disable, promotion save and owner analytics refresh were rechecked. Previous create/registration evidence remains valid; deletion is exercised only in isolated automated fixtures.
+
+CI passed for a1a780238d3a31dd1312c05a2b5b95fbb01d6fd8: https://github.com/arlpramesh7/ICT308/actions/runs/37264779907 . This current run supplements, rather than replaces, earlier historical CI evidence.
+
+## Final Customer UX Verification
+
+Discovery, checkout and Account read the authenticated display name. The existing personal account was preserved; the separate seeded customer was used for browser testing without disclosing or resetting a private password. Invalid phone `dvds` displayed the exact inline error and focused the field. Blank phone produced order SD-20261005-1C9AC901 ($129.50); a valid `0400 123 456` produced SD-20261005-39B58DF4 ($38.00). Cart quantity two survived reload and remained two in discovery, restaurant, cart and checkout badges. Cancel preserved the Spice Tailor cart; explicit confirmation switched to Green Fork, and another confirmation switched back. API tests verify stale revisions, unavailable targets, account isolation and transaction safety. No promotion-text parsing or automatic discount is implemented.
+
+The final $38.00 order progressed Placed, Confirmed, Preparing, Ready and Completed using genuine seeded staff/owner sessions. Staff was denied the owner page. Customer confirmation/history and Account were verified at 390 px, along with discovery, restaurant, cart and checkout; every measured page had scroll width 375 px against viewport width 390 px. Tested browser console logs contained no errors/warnings. Earlier review-submission evidence remains valid; existing user-authored review text was preserved in the final recheck.
+
+CI succeeded for 5a9dda7d891ce7ed16b36123b9547cc71b0f99f5: https://github.com/arlpramesh7/ICT308/actions/runs/37266735649 . Final documentation and any merge need their own run verification.
+
+## Historical baseline results
 Evidence captured 5 October 2026, Australia/Sydney (machine-readable logs use UTC).
 Runtime: Node.js 24.19.0 on Windows build 26200. Full suite: 82 passed, 0 failed, 0 cancelled, 0 skipped; 3.719 seconds in the saved run.
 
@@ -40,10 +58,12 @@ Both p95 results were below the design's three-second response target under thes
 Historical notification spam and impression inflation were already corrected in the recovered baseline and are retained as regression cases, not claimed as new discoveries.
 
 ## Browser verification
-Observed: customer/staff/owner login; persisted preferences; inside-geofence recommendations; six score components; vegetarian/vegan exclusions; menu modal; saved demonstration rating; staff create/edit/disable; dated promotion save; actual owner metrics; access-denied screen; customer narrow-screen layout. Screenshots are real captures. Expanded QA records and additional screenshots accompany the release. This is tool-assisted functional/visual verification, not human UAT.
+Observed: customer/staff/owner login; persisted preferences; inside-geofence recommendations; six score components; vegetarian/vegan exclusions; dedicated full menu and paginated reviews; saved browser-QA rating; staff create/edit/disable; dated promotion save; actual owner metrics; access-denied screen; customer narrow-screen layout. Screenshots are real captures. Expanded QA records and additional screenshots accompany the release. This is tool-assisted functional/visual verification, not human UAT.
 
 ## Clean installation and CI
 A separate clone passed npm ci, first/repeated setup, health/HTML startup and three role logins. See evidence/clean-install.json.
+
+The current functional commit 5a9dda7 also passed a fresh isolated clone, npm ci, first and repeated setup, three seeded role logins, authenticated customer profile, empty initial cart and all ordering-page HTTP checks. The repeat retained nine users, three active seeded accounts, six restaurants, two memberships and thirty-six catalogue reviews without adding duplicate accounts. See evidence/clean-install-final.json. Both temporary verification servers were stopped after the checks.
 GitHub Actions run 37212127823 passed installation, automated tests, dependency audit and performance smoke test on Ubuntu. URL: https://github.com/arlpramesh7/ICT308/actions/runs/37212127823
 The recorded run covers commit 57577550efdae6d462e1f9eab45be1d09c660cb9. Later commits need their own status check.
 
