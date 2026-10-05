@@ -19,7 +19,7 @@ async function load() {
   $('#promotion-start').value = localDate(r.promotion_start || new Date());
   $('#promotion-end').value = localDate(r.promotion_end || new Date(Date.now() + 86400000));
   $('#promotion-status').textContent = !r.promotion_active ? 'Disabled' : r.promotion_start && Date.parse(r.promotion_start) > Date.now() ? 'Scheduled' : r.promotion_end && Date.parse(r.promotion_end) <= Date.now() ? 'Expired' : 'Active';
-  $('#audit-log').innerHTML = state.audit.length ? state.audit.map(a => '<p>' + escape(a.action.replace('.', ' ')) + (a.target_id ? ' · Item ' + a.target_id : '') + ' · ' + time(a.occurred_at) + '</p>').join('') : '<p>No recorded changes yet.</p>'; icons();
+  $('#audit-log').innerHTML = state.audit.length ? state.audit.map(a => '<p>' + escape(a.action.replace('.', ' ')) + (a.target_id ? (a.action.startsWith('order.') ? ' · Order ' : ' · Item ') + a.target_id : '') + ' · ' + time(a.occurred_at) + '</p>').join('') : '<p>No recorded changes yet.</p>'; icons();
 }
 const user = await guard(['staff', 'owner']);
 if (user) {
@@ -66,4 +66,3 @@ if (user) {
     });
   });
 }
-

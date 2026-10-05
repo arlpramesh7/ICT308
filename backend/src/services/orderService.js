@@ -48,7 +48,8 @@ function cartFor(userId) {
   return { restaurant, items, item_count: items.reduce((sum, i) => sum + i.quantity, 0), subtotal_cents: subtotal, total_cents: subtotal, currency: 'AUD', revision, can_checkout: Boolean(items.length && restaurant?.is_open && items.every(i => i.available)) };
 }
 function orderDetails(order) {
-  return { ...order, restaurant_name: db.prepare('SELECT name FROM restaurant WHERE restaurant_id = ?').get(order.restaurant_id)?.name, items: db.prepare('SELECT item_id,item_name,unit_price_cents,quantity,unit_price_cents * quantity AS line_total_cents FROM order_item WHERE order_id = ? ORDER BY order_item_id').all(order.order_id), payment_status: 'No payment collected', currency: 'AUD' };
+  const { idempotency_key, ...details } = order;
+  return { ...details, restaurant_name: db.prepare('SELECT name FROM restaurant WHERE restaurant_id = ?').get(order.restaurant_id)?.name, items: db.prepare('SELECT item_id,item_name,unit_price_cents,quantity,unit_price_cents * quantity AS line_total_cents FROM order_item WHERE order_id = ? ORDER BY order_item_id').all(order.order_id), payment_status: 'No payment collected', currency: 'AUD' };
 }
 function transaction(action) {
   db.exec('BEGIN IMMEDIATE');
