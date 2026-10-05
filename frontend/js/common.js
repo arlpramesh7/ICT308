@@ -21,9 +21,14 @@ export async function api(path, { method = 'GET', body, redirectOn401 = true } =
   }
   return result;
 }
+export function updateCartCount(cart) {
+  const count = $('#cart-count');
+  if (count) { count.textContent = cart.item_count; count.hidden = !cart.item_count; }
+  $('#cart-link')?.setAttribute('aria-label', 'Cart, ' + cart.item_count + ' items');
+}
 export function header(user = null) {
   const path = location.pathname;
-  const links = user ? (user.role === 'customer' ? [['Discover', '/customer.html'], ['Account', '/account.html']] : user.role === 'owner' ? [['Analytics', '/owner.html'], ['Menu', '/staff.html'], ['Account', '/account.html']] : [['Menu', '/staff.html'], ['Account', '/account.html']]) : [['Home', '/'], ['Log in', '/login.html']];
+  const links = user ? (user.role === 'customer' ? [['Discover', '/customer.html'], ['Orders', '/orders.html'], ['Account', '/account.html']] : user.role === 'owner' ? [['Analytics', '/owner.html'], ['Menu', '/staff.html'], ['Orders', '/staff-orders.html'], ['Account', '/account.html']] : [['Menu', '/staff.html'], ['Orders', '/staff-orders.html'], ['Account', '/account.html']]) : [['Home', '/'], ['Log in', '/login.html']];
   $('#site-header').innerHTML = '<nav class="topnav wrap" aria-label="Main"><a class="brand" href="' + (user ? homeFor(user.role) : '/') + '"><span class="brand-mark"><i data-lucide="utensils-crossed"></i></span>SmartDine</a><div class="nav-links">' + links.map(([label, href]) => '<a href="' + href + '"' + (path === href ? ' aria-current="page"' : '') + '>' + label + '</a>').join('') + (user ? '<button id="logout" class="icon-button" title="Log out" aria-label="Log out"><i data-lucide="log-out"></i></button>' : '<a class="button" href="/register.html">Register</a>') + '</div></nav>';
   $('#logout')?.addEventListener('click', async () => {
     try {
@@ -37,6 +42,10 @@ export function header(user = null) {
       await api('/auth/logout', { method: 'POST', body: {} }); location.assign('/login.html');
     } catch (error) { toast(error.message, true); }
   });
+  if (user?.role === 'customer') {
+    $('#logout').insertAdjacentHTML('beforebegin', '<a id="cart-link" class="cart-link icon-button" href="/cart.html" title="Cart" aria-label="Cart"><i data-lucide="shopping-bag"></i><span id="cart-count" hidden></span></a>');
+    api('/cart').then(updateCartCount).catch(error => toast(error.message, true));
+  }
   icons();
 }
 export async function guard(roles) {

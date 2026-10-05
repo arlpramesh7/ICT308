@@ -5,6 +5,7 @@ const db = require('../db');
 const { requireAuth } = require('../middleware/auth');
 const { validate } = require('../middleware/validation');
 const router = express.Router();
+const { orderDetails } = require('../services/orderService');
 router.use(requireAuth);
 router.get('/export', (req, res) => {
   const userId = req.user.user_id;
@@ -16,6 +17,8 @@ router.get('/export', (req, res) => {
     notifications: db.prepare('SELECT restaurant_id, message, sent_at, is_read, push_status FROM notification WHERE user_id = ?').all(userId),
     feedback: db.prepare('SELECT restaurant_id, rating, comment, submitted_at FROM feedback WHERE user_id = ?').all(userId),
     favourites: db.prepare('SELECT restaurant_id, saved_at FROM favourite WHERE user_id = ?').all(userId),
+    cart: db.prepare('SELECT item_id,quantity FROM cart_item WHERE user_id = ?').all(userId),
+    orders: db.prepare('SELECT * FROM customer_order WHERE user_id = ? ORDER BY order_id DESC').all(userId).map(orderDetails).map(({ idempotency_key, ...order }) => order),
     push_devices: db.prepare('SELECT COUNT(*) AS count FROM push_subscription WHERE user_id = ?').get(userId).count,
     location_history: 'Precise coordinates are processed for each request and are not stored.',
   });
