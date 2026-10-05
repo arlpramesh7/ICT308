@@ -33,6 +33,7 @@ for (const [name, email, role] of accounts) {
     }
   }
 }
+require('./seed-reviews').seedReviews();
 db.close();
 console.log('Demo ready. Accounts: customer@smartdine.test, staff@smartdine.test, owner@smartdine.test');
 console.log('Demo-only password: ' + password);

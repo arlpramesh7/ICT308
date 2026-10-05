@@ -8,7 +8,7 @@
  * aggregate they produce.
  */
 const express = require('express');
-const { body, param, validationResult } = require('express-validator');
+const { body, param, query, validationResult } = require('express-validator');
 const db = require('../db');
 const { requireAuth, requireRole } = require('../middleware/auth');
 const { ratingsByRestaurant } = require('../services/analyticsService');
@@ -66,25 +66,35 @@ router.post(
 );
 
 // Public: read the ratings for a venue.
-router.get('/:restaurantId', [param('restaurantId').isInt({ min: 1 })], (req, res) => {
+router.get('/:restaurantId', [param('restaurantId').isInt({ min: 1 }), query('page').optional().isInt({ min: 1, max: 100000 }), query('page_size').optional().isInt({ min: 1, max: 50 })], (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
   const restaurantId = Number(req.params.restaurantId);
+  if (!db.prepare('SELECT 1 FROM restaurant WHERE restaurant_id = ? AND is_active = 1').get(restaurantId)) return res.status(404).json({ error: 'Restaurant not found.' });
   const aggregate = ratingsByRestaurant().get(restaurantId);
+  const page = Number(req.query.page || 1), pageSize = Number(req.query.page_size || 20);
 
   res.json({
     restaurant_id: restaurantId,
     average_rating: aggregate ? Number(aggregate.average.toFixed(2)) : null,
     rating_count: aggregate ? aggregate.count : 0,
+    page,
+    page_size: pageSize,
+    has_next: page * pageSize < (aggregate?.count || 0),
     reviews: db
       .prepare(
-        `SELECT f.rating, f.comment, f.submitted_at
+        `SELECT f.feedback_id, f.rating, f.comment, f.submitted_at
          FROM current_feedback f
-         WHERE f.restaurant_id = ? ORDER BY f.feedback_id DESC LIMIT 20`
+         WHERE f.restaurant_id = ? ORDER BY f.submitted_at DESC, f.feedback_id DESC LIMIT ? OFFSET ?`
       )
-      .all(restaurantId),
+      .all(restaurantId, pageSize, (page - 1) * pageSize),
   });
+});
+
+router.get('/:restaurantId/mine', requireAuth, requireRole('customer'), param('restaurantId').isInt({ min: 1 }), (req, res) => {
+  if (!validationResult(req).isEmpty()) return res.status(400).json({ error: 'Invalid restaurant.' });
+  res.json(db.prepare('SELECT rating, comment FROM current_feedback WHERE user_id = ? AND restaurant_id = ?').get(req.user.user_id, Number(req.params.restaurantId)) || null);
 });
 
 // The customer's own submitted ratings.

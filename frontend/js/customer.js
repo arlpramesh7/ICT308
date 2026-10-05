@@ -12,7 +12,7 @@ const presets = {
 };
 async function notifications() {
   const rows = await api('/location/notifications');
-  $('#notifications').innerHTML = rows.length ? rows.map(n => '<article class="notification ' + (n.is_read ? '' : 'unread') + '"><div><strong>' + escape(n.restaurant_name) + '</strong><p>' + escape(n.message) + '</p><small>' + time(n.sent_at) + ' &middot; ' + (n.is_read ? 'Read' : 'Unread') + '</small></div>' + (!n.is_read ? '<button class="icon-button" data-read="' + n.notif_id + '" title="Mark as read" aria-label="Mark offer as read"><i data-lucide="check"></i></button>' : '') + '</article>').join('') : '<p class="empty">No offers yet.</p>'; icons();
+  $('#notifications').innerHTML = rows.length ? rows.map(n => '<article class="notification ' + (n.is_read ? '' : 'unread') + '"><div><strong>' + escape(n.restaurant_name) + '</strong><p>' + escape(n.message.replace(' - demonstration offer', '')) + '</p><small>' + time(n.sent_at) + ' &middot; ' + (n.is_read ? 'Read' : 'Unread') + '</small></div>' + (!n.is_read ? '<button class="icon-button" data-read="' + n.notif_id + '" title="Mark as read" aria-label="Mark offer as read"><i data-lucide="check"></i></button>' : '') + '</article>').join('') : '<p class="empty">No offers yet.</p>'; icons();
 }
 function render() {
   const query = $('#restaurant-search').value.trim().toLowerCase();
