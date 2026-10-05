@@ -36,6 +36,7 @@ function addColumnIfMissing(table, column, definition) {
 }
 
 const migrations = [
+  addColumnIfMissing('user', 'display_name', 'TEXT'),
   // Required by the dietary hard-exclusion rule in the scoring service (FR2, FR5).
   addColumnIfMissing('restaurant', 'vegetarian_friendly', 'INTEGER NOT NULL DEFAULT 0'),
   // FR8 asks staff to manage "menu, promotions, and availability"; promotions

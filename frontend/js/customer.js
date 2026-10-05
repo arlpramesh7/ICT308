@@ -36,7 +36,7 @@ async function discover() {
 }
 const user = await guard(['customer']);
 if (user) {
-  $('#greeting').textContent = 'Good food, ' + user.username.split(' ')[0] + '.';
+  $('#greeting').textContent = 'Good food, ' + (user.display_name || user.username).split(' ')[0] + '.';
   try {
     const pref = await api('/preferences');
     if (pref) { $('#cuisine').value = pref.cuisine_type || ''; $('#dietary').value = pref.dietary_req || ''; $('#price').value = pref.price_range || ''; $('#radius').value = pref.radius_km; $('#preference-status').textContent = 'Your saved preferences'; }

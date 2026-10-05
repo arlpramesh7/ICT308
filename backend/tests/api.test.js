@@ -46,6 +46,17 @@ test('public registration cannot escalate to staff', async () => assert.equal((a
 test('registration requires privacy acknowledgement and a strong enough password', async () => assert.equal((await request('POST', '/auth/register', { username: 'Short', email: 'short@example.test', password: 'short' })).status, 400));
 test('duplicate registration is rejected case-insensitively', async () => assert.equal((await request('POST', '/auth/register', { username: 'Other Name', email: 'NEW@EXAMPLE.TEST', password, privacy_accepted: true })).status, 409));
 test('valid login accepts email case differences', async () => assert.equal((await request('POST', '/auth/login', { email: 'CUSTOMER@SMARTDINE.TEST', password })).status, 200));
+
+test('authenticated display names are database driven without changing unique login identifiers', async () => {
+  const initial = await request('GET', '/auth/me', undefined, customer);
+  assert.equal(initial.body.display_name, 'customer');
+  db.prepare('UPDATE user SET display_name = ? WHERE user_id = ?').run('Profile Test Name', customerId);
+  const me = await request('GET', '/auth/me', undefined, customer);
+  assert.equal(me.body.username, 'customer'); assert.equal(me.body.display_name, 'Profile Test Name');
+  const login = await request('POST', '/auth/login', { email: 'customer@smartdine.test', password });
+  assert.equal(login.body.display_name, 'Profile Test Name');
+  db.prepare('UPDATE user SET display_name = NULL WHERE user_id = ?').run(customerId);
+});
 test('missing authentication is rejected', async () => assert.equal((await request('GET', '/preferences')).status, 401));
 test('tampered token is rejected', async () => assert.equal((await request('GET', '/preferences', undefined, customer + 'x')).status, 401));
 test('expired token is rejected', async () => assert.equal((await request('GET', '/preferences', undefined, token(customerId, { expiresIn: -1 }))).status, 401));

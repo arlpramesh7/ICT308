@@ -4,11 +4,12 @@ const db = require('../db');
 const { requireAuth, requireRole } = require('../middleware/auth');
 const { validate } = require('../middleware/validation');
 const { placeOrder, orderDetails, transaction } = require('../services/orderService');
+const { validPhone } = require('../services/phoneValidation');
 const router = express.Router();
 router.use(requireAuth);
 router.post('/', requireRole('customer'),
   body('customer_name').isString().trim().isLength({ min: 2, max: 80 }),
-  body('contact_phone').optional().isString().matches(/^[0-9+() \-]{0,25}$/),
+  body('contact_phone').optional().custom(validPhone).withMessage('Enter a valid phone number or leave this field blank.'),
   body('pickup_notes').optional().isString().isLength({ max: 500 }),
   body('fulfilment').custom(v => v === 'pickup'), body('cart_revision').isString().matches(/^[a-f0-9]{64}$/), body('idempotency_key').isString().isUUID(), validate,
   (req, res) => { try { const result = placeOrder(req.user.user_id, req.body); res.status(result.created ? 201 : 200).json(result.order); } catch (error) { if (error.status) return res.status(error.status).json({ error: error.message }); throw error; } });

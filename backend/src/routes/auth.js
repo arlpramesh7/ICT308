@@ -6,7 +6,7 @@ const { validate } = require('../middleware/validation');
 const { requireAuth, issueSession } = require('../middleware/auth');
 const router = express.Router();
 const emailRule = () => body('email').isString().trim().isEmail().isLength({ max: 254 }).toLowerCase();
-const publicUser = user => ({ user_id: user.user_id, username: user.username, email: user.email, role: user.role });
+const publicUser = user => ({ user_id: user.user_id, username: user.username, display_name: user.display_name || user.username, email: user.email, role: user.role });
 
 router.post('/register', [
   body('username').isString().trim().isLength({ min: 3, max: 50 }), emailRule(),
@@ -52,4 +52,3 @@ router.post('/logout', requireAuth, (req, res) => {
   res.json({ ok: true });
 });
 module.exports = router;
-

@@ -6,7 +6,7 @@ async function registration() {
   return navigator.serviceWorker.ready;
 }
 if (user) {
-  $('#account-profile').innerHTML = '<dt>Name</dt><dd>' + escape(user.username) + '</dd><dt>Email</dt><dd>' + escape(user.email) + '</dd><dt>Role</dt><dd>' + escape(user.role) + '</dd>';
+  $('#account-profile').innerHTML = '<dt>Name</dt><dd>' + escape(user.display_name || user.username) + '</dd><dt>Email</dt><dd>' + escape(user.email) + '</dd><dt>Role</dt><dd>' + escape(user.role) + '</dd>';
   try { $('#notification-preference').checked = Boolean((await api('/privacy/settings')).notifications_enabled); } catch (error) { toast(error.message, true); }
   if (user.role !== 'customer') { $('#enable-push').hidden = true; $('#disable-push').hidden = true; $('#notification-preference').disabled = true; $('#push-status').textContent = 'Promotional offers are available for customer accounts.'; }
   else $('#push-status').textContent = 'Browser permission: ' + ('Notification' in window ? Notification.permission : 'unsupported') + '. In-app offers do not need browser permission.';

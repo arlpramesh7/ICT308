@@ -10,7 +10,7 @@ function requireAuth(req, res, next) {
   if (!token) return res.status(401).json({ error: 'Please sign in to continue.' });
   try {
     const payload = jwt.verify(token, config.secret, JWT_OPTIONS);
-    const user = db.prepare('SELECT user_id, username, email, role, token_version FROM user WHERE user_id = ? AND is_active = 1').get(payload.user_id);
+    const user = db.prepare('SELECT user_id, username, display_name, email, role, token_version FROM user WHERE user_id = ? AND is_active = 1').get(payload.user_id);
     if (!user || user.token_version !== payload.version) throw new Error('Session revoked');
     req.user = user;
     next();
@@ -43,4 +43,3 @@ function issueSession(res, user) {
 }
 
 module.exports = { requireAuth, requireRole, requireVenue, issueSession, JWT_SECRET: config.secret };
-

@@ -17,7 +17,7 @@ export async function api(path, { method = 'GET', body, redirectOn401 = true } =
   if (!response.ok) {
     if (response.status === 401 && document.body.dataset.protected && redirectOn401) location.assign('/login.html?reason=expired');
     const details = result.errors?.map(e => e.message || e.msg).filter(m => m !== 'Invalid value').join(' ');
-    const error = new Error(details || result.error || 'Please check the supplied values.'); error.status = response.status; throw error;
+    const error = new Error(details || result.error || 'Please check the supplied values.'); error.status = response.status; error.code = result.code; error.fields = result.errors || []; throw error;
   }
   return result;
 }

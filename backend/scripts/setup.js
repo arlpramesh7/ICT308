@@ -18,15 +18,17 @@ require('../src/config');
 if (process.env.NODE_ENV === 'production') throw new Error('Demo setup is disabled in production.');
 const db = require('../src/db');
 const accounts = [
-  ['Alex Morgan', 'customer@smartdine.test', 'customer'],
+  ['Prajwal Shrestha', 'customer@smartdine.test', 'customer'],
   ['Jamie Chen', 'staff@smartdine.test', 'staff'],
   ['Taylor Singh', 'owner@smartdine.test', 'owner'],
 ];
 const password = 'SmartDine-Demo26!';
 const hash = bcrypt.hashSync(password, 12);
+db.prepare("UPDATE user SET display_name = 'Prajwal Shrestha' WHERE email = 'customer@smartdine.test' AND role = 'customer'").run();
 for (const [name, email, role] of accounts) {
   if (!db.prepare('SELECT 1 FROM user WHERE email = ?').get(email)) {
-    const info = db.prepare('INSERT INTO user (username, email, password_hash, role) VALUES (?, ?, ?, ?)').run(name, email, hash, role);
+    const username = db.prepare('SELECT 1 FROM user WHERE username = ?').get(name) ? 'smartdine.' + role : name;
+    const info = db.prepare('INSERT INTO user (username, display_name, email, password_hash, role) VALUES (?, ?, ?, ?, ?)').run(username, name, email, hash, role);
     if (role !== 'customer') {
       const venue = db.prepare("SELECT restaurant_id FROM restaurant WHERE name = 'The Spice Tailor'").get();
       if (venue) db.prepare('INSERT INTO restaurant_member (user_id, restaurant_id) VALUES (?, ?)').run(info.lastInsertRowid, venue.restaurant_id);

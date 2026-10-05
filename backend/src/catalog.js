@@ -46,7 +46,7 @@ function enrichCatalog(db) {
       }
     }
     db.prepare("UPDATE restaurant SET promotion_text = '20% off all curries' WHERE promotion_text = '20% off all curries - demonstration offer'").run();
-    for (const [old, name] of [['Customer Demo', 'Alex Morgan'], ['Staff Demo', 'Jamie Chen'], ['Owner Demo', 'Taylor Singh']]) db.prepare('UPDATE user SET username = ? WHERE username = ? AND email IN (?,?,?)').run(name, old, 'customer@smartdine.test', 'staff@smartdine.test', 'owner@smartdine.test');
+    for (const [old, name] of [['Customer Demo', 'Prajwal Shrestha'], ['Staff Demo', 'Jamie Chen'], ['Owner Demo', 'Taylor Singh']]) db.prepare('UPDATE user SET display_name = ? WHERE username = ? AND email IN (?,?,?)').run(name, old, 'customer@smartdine.test', 'staff@smartdine.test', 'owner@smartdine.test');
     db.prepare("UPDATE menu_item SET item_name = 'Chickpea Garden Salad', description = 'Chickpeas, crisp cucumber, herbs and lemon dressing.' WHERE item_name = 'Chickpea Salad Demo' AND description = 'Demonstration menu item created during browser verification.'").run();
     db.prepare('INSERT INTO app_migration (name) VALUES (?)').run('catalog-v2');
     db.exec('COMMIT');
