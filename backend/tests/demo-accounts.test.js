@@ -12,8 +12,9 @@ const { seedDemoAccounts, accounts, password } = require('../scripts/demo-accoun
 let server, base, customerToken;
 const orders = new Map();
 async function request(method, path, body, token) {
+  // Synchronous bcrypt fixtures can outlive an idle pooled socket on slower CI hosts.
   const response = await fetch(base + '/api' + path, {
-    method, headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: 'Bearer ' + token } : {}) },
+    method, headers: { 'Content-Type': 'application/json', Connection: 'close', ...(token ? { Authorization: 'Bearer ' + token } : {}) },
     ...(body === undefined ? {} : { body: JSON.stringify(body) }),
   });
   return { status: response.status, body: await response.json() };
