@@ -2,7 +2,7 @@
 
 Status: NOT YET EXECUTED BY A HUMAN PARTICIPANT. Automated API and browser checks do not establish human acceptance.
 
-Use fictional data and the three local demo accounts. Start with a clean demo profile or inspect existing offers before beginning; repeat notifications are intentionally suppressed for 30 minutes. Do not record real GPS without the participant's informed agreement.
+Use fictional data, the local customer and the ordered restaurant's exclusive staff/owner accounts listed in README/USER_GUIDE. All six venues have named accounts; public local password SmartDine-Demo26!. Start with a clean profile or inspect existing offers; repeat notifications are suppressed for 30 minutes. Do not record real GPS without informed agreement. Human SMAR-40 remains To Do; do not replace participant results with automated passes.
 
 Participant name or agreed identifier: __________________
 Date and local time: __________________

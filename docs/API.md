@@ -2,6 +2,8 @@
 
 All paths below start with `/api`. Browser requests use the same origin and an HttpOnly session cookie; API clients may use a Bearer JWT. JSON bodies are required for mutations. A session expires after one hour; logout revokes all sessions for that account.
 
+Privileged membership comes from controlled local setup, not public registration. Each of six fixture venues has one named staff and owner; generic pilot aliases remain compatible. README/USER_GUIDE list all local credentials. Role checks never replace the restaurant-membership check. Staff cannot use owner analytics, and another customer's order detail returns 404 rather than exposing existence.
+
 | Method and path | Access | Purpose |
 |---|---|---|
 | GET /health | Public | Service health and version |

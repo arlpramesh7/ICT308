@@ -1,8 +1,8 @@
 # SmartDine
 
-**Latest delivery state:** photographic discovery, restaurant pages, persistent favourites, paginated reviews and complete pickup ordering are implemented. **128 automated tests pass.** See [delivery update](docs/DELIVERY_UPDATE.md) for verified journeys and remaining human release checks. [PR #2](https://github.com/arlpramesh7/ICT308/pull/2) records the delivery branch and its live merge status.
+**Latest delivery state:** photographic discovery, restaurant pages, persistent favourites, paginated reviews and complete pickup ordering are implemented. **145 automated tests pass.** See [delivery update](docs/DELIVERY_UPDATE.md) for verified journeys and remaining human release checks. [PR #2](https://github.com/arlpramesh7/ICT308/pull/2) records the completed final-delivery merge into main; [PR #3](https://github.com/arlpramesh7/ICT308/pull/3) records restaurant-account and release-consistency work.
 
-[![SmartDine verification](https://github.com/arlpramesh7/ICT308/actions/workflows/tests.yml/badge.svg?branch=feature%2FSMAR-36-final-delivery)](https://github.com/arlpramesh7/ICT308/actions/workflows/tests.yml)
+[![SmartDine verification](https://github.com/arlpramesh7/ICT308/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/arlpramesh7/ICT308/actions/workflows/tests.yml)
 
 Location-aware restaurant discovery with explainable recommendations, assigned-venue staff management and owner analytics. ICT308 Project 2 final web delivery, continuing the existing ICT307 design and Assessment 1 repository.
 
@@ -16,7 +16,7 @@ npm run setup
 npm start
 ```
 
-Open **http://localhost:4000**. The delivery branch is `feature/SMAR-36-final-delivery`; after PR #2 merges, the same implementation is available on `main`. Express serves both frontend and API; no separate frontend server is needed.
+Open **http://localhost:4000**. The final verified implementation is available on `main`. Express serves both frontend and API; no separate frontend server is needed.
 
 | Demo role | Email | Password |
 |---|---|---|
@@ -24,7 +24,18 @@ Open **http://localhost:4000**. The delivery branch is `feature/SMAR-36-final-de
 | Staff | staff@smartdine.test | SmartDine-Demo26! |
 | Owner | owner@smartdine.test | SmartDine-Demo26! |
 
-These are public **local demonstration credentials**, not production accounts. Staff and owner are assigned to The Spice Tailor. Setup preserves existing data and generates private secrets in ignored `backend/.env`. The seeded customer displays Prajwal Shrestha; it is a separate local account from any personal account. Names are read from the authenticated profile, not hard-coded in pages.
+The generic staff/owner aliases remain assigned to The Spice Tailor. Setup also creates these exclusive restaurant accounts, all using **SmartDine-Demo26!**:
+
+| Restaurant | Staff email | Owner email |
+|---|---|---|
+| The Spice Tailor | staff.the-spice-tailor@smartdine.test | owner.the-spice-tailor@smartdine.test |
+| Nikkei Bar | staff.nikkei-bar@smartdine.test | owner.nikkei-bar@smartdine.test |
+| Trattoria Bianco | staff.trattoria-bianco@smartdine.test | owner.trattoria-bianco@smartdine.test |
+| Green Fork | staff.green-fork@smartdine.test | owner.green-fork@smartdine.test |
+| Chophouse | staff.chophouse@smartdine.test | owner.chophouse@smartdine.test |
+| Seoul Grill | staff.seoul-grill@smartdine.test | owner.seoul-grill@smartdine.test |
+
+Display names are the restaurant name plus Staff or Owner. These are public **local demonstration credentials**, not production accounts. Repeat setup preserves account IDs, passwords and content; it rejects conflicting privileged credentials/roles/memberships rather than resetting passwords or widening access. Provisioning is disabled in production or with DEMO_DATA=false. Setup generates private secrets in ignored `backend/.env`. The seeded customer displays Prajwal Shrestha and is distinct from personal accounts. Names come from the authenticated profile, not hard-coded pages.
 
 ## Features
 - Customer-only registration, login, persistent timed lockout and revocable one-hour sessions.
@@ -62,7 +73,7 @@ npm test
 npm run test:performance
 npm audit --prefix backend
 ```
-Latest saved local run: **128 passed, 0 failed**, including 36 unit tests and 92 HTTP/security tests. The earlier 82-test logs are retained as a baseline; `docs/evidence/final-tests.txt` contains the final run. Tests use isolated databases. The benchmark measures 200 requests each at six and 1,006 venues, with ten concurrent clients; it never modifies the demo database. See [testing report](docs/TESTING_REPORT.md) and [raw evidence](docs/evidence).
+Latest saved local run: **145 passed, 0 failed, 0 skipped**: 36 unit, five seed/persistence and 104 HTTP/security tests. The earlier 82-test logs are retained as a baseline; `docs/evidence/final-tests.txt` contains the final run. Tests use isolated databases. The benchmark passed all 400 measured requests, with p95 21.80 ms at six venues and 728.62 ms at 1,006 venues. These are short local measurements, not production capacity. Clean-clone installation, repeat setup, all fifteen account logins and restaurant isolation passed. See [testing report](docs/TESTING_REPORT.md) and [raw evidence](docs/evidence).
 
 GitHub Actions runs locked installation, tests, dependency audit and performance smoke verification on pushes/PRs. Read the actual run status; the badge alone is not an independent review.
 
@@ -117,4 +128,4 @@ Preserve history, use real SMAR keys in logical commits, verify changes before c
 Pickup only, one restaurant per cart, maximum 20 per item and 50 units per order. Menu prices include applicable taxes; free-text promotions are not automatically applied and are confirmed separately at pickup. The server rechecks current availability, opening hours, cart revision and prices. Optional phone accepts blank or standard Australian mobile/landline formatting, with inline and server validation. Switching restaurants requires Cancel / Clear cart & add item confirmation; revision-checked transactional replacement preserves the old cart on failure. The badge counts total item quantity. Idempotency keys prevent duplicate orders on retry. Ordered names/prices are snapshots and survive menu changes. No money is collected and no order is sent to an external business. The checkout and confirmation state this explicitly.
 
 ## Limitations
-This is a loopback educational deployment, not a production-hosted service. SQLite files are not encrypted by the application. No production uptime or capacity guarantee, native background GPS, verified physical visits, real payments, external restaurant fulfilment, delivery tracking, password-recovery service or universal accessibility certification is claimed. Optional push depends on browser permission, provider availability and unverified device delivery. Human UAT and independent review remain separate release obligations.
+This is a loopback educational deployment, not a production-hosted service. Cuisine and budget rank candidates rather than strictly excluding mismatches; there is no minimum-rating filter (SMAR-3/17 remain open). SQLite files are not encrypted by the application. No production uptime or capacity guarantee, native background GPS, verified physical visits, real payments, external restaurant fulfilment, delivery tracking, password-recovery service or universal accessibility certification is claimed. Optional push depends on browser permission, provider availability and unverified device delivery. Human UAT and independent review remain separate release obligations.

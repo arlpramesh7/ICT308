@@ -1,0 +1,90 @@
+{
+  "capturedAt": "2026-10-05T07:29:42.353Z",
+  "method": "Actual browser login screens and assigned restaurant selectors; API isolation separately tested in demo-accounts.test.js.",
+  "accounts": [
+    {
+      "restaurant": "Seoul Grill",
+      "role": "staff",
+      "email": "staff.seoul-grill@smartdine.test",
+      "assignment": "Seoul Grill",
+      "result": "PASS"
+    },
+    {
+      "restaurant": "Seoul Grill",
+      "role": "owner",
+      "email": "owner.seoul-grill@smartdine.test",
+      "assignment": "Seoul Grill",
+      "result": "PASS"
+    },
+    {
+      "restaurant": "The Spice Tailor",
+      "role": "staff",
+      "email": "staff.the-spice-tailor@smartdine.test",
+      "assignment": "The Spice Tailor",
+      "result": "PASS"
+    },
+    {
+      "restaurant": "The Spice Tailor",
+      "role": "owner",
+      "email": "owner.the-spice-tailor@smartdine.test",
+      "assignment": "The Spice Tailor",
+      "result": "PASS"
+    },
+    {
+      "restaurant": "Nikkei Bar",
+      "role": "staff",
+      "email": "staff.nikkei-bar@smartdine.test",
+      "assignment": "Nikkei Bar",
+      "result": "PASS"
+    },
+    {
+      "restaurant": "Nikkei Bar",
+      "role": "owner",
+      "email": "owner.nikkei-bar@smartdine.test",
+      "assignment": "Nikkei Bar",
+      "result": "PASS"
+    },
+    {
+      "restaurant": "Trattoria Bianco",
+      "role": "staff",
+      "email": "staff.trattoria-bianco@smartdine.test",
+      "assignment": "Trattoria Bianco",
+      "result": "PASS"
+    },
+    {
+      "restaurant": "Trattoria Bianco",
+      "role": "owner",
+      "email": "owner.trattoria-bianco@smartdine.test",
+      "assignment": "Trattoria Bianco",
+      "result": "PASS"
+    },
+    {
+      "restaurant": "Green Fork",
+      "role": "staff",
+      "email": "staff.green-fork@smartdine.test",
+      "assignment": "Green Fork",
+      "result": "PASS"
+    },
+    {
+      "restaurant": "Green Fork",
+      "role": "owner",
+      "email": "owner.green-fork@smartdine.test",
+      "assignment": "Green Fork",
+      "result": "PASS"
+    },
+    {
+      "restaurant": "Chophouse",
+      "role": "staff",
+      "email": "staff.chophouse@smartdine.test",
+      "assignment": "Chophouse",
+      "result": "PASS"
+    },
+    {
+      "restaurant": "Chophouse",
+      "role": "owner",
+      "email": "owner.chophouse@smartdine.test",
+      "assignment": "Chophouse",
+      "result": "PASS"
+    }
+  ]
+}

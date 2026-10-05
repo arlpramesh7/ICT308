@@ -1,33 +1,107 @@
 {
-  "capturedAt": "2026-10-05T05:20:23.726Z",
-  "commit": "5a9dda7d891ce7ed16b36123b9547cc71b0f99f5",
+  "capturedAt": "2026-10-05T07:42:05.543Z",
+  "commit": "02749dcd354dcfda1fc1ff77e24aad8b4aa83236",
   "node": "v24.19.0",
   "commands": [
-    "git clone --local --branch feature/SMAR-36-final-delivery",
+    "git clone --local --branch feature/SMAR-45-restaurant-demo-accounts",
     "npm ci",
     "npm run setup",
-    "npm run setup"
+    "npm run setup",
+    "npm start (port 4012 override)"
   ],
   "result": "PASS",
   "checks": [
     "Locked install and repeated setup succeeded",
-    "Three intended local role logins worked",
-    "Authenticated display name correct",
+    "All fifteen local account logins worked",
+    "Each privileged account has exactly one correct restaurant and other-venue access returns 403",
+    "Authenticated display names correct",
     "Customer cart initialized empty",
     "All ordering pages returned HTTP 200",
-    "Repeated setup preserved exactly three active accounts and six inactive review fixtures"
+    "Repeated setup preserved fifteen active accounts and six inactive review fixtures"
   ],
   "counts": {
-    "users": 9,
-    "activeUsers": 3,
+    "users": 21,
+    "activeUsers": 15,
     "restaurants": 6,
-    "memberships": 2,
+    "memberships": 14,
     "reviews": 36
   },
   "roles": [
-    "customer",
-    "staff",
-    "owner"
+    {
+      "role": "customer",
+      "email": "customer@smartdine.test",
+      "restaurant": null
+    },
+    {
+      "role": "staff",
+      "email": "staff@smartdine.test",
+      "restaurant": "The Spice Tailor"
+    },
+    {
+      "role": "owner",
+      "email": "owner@smartdine.test",
+      "restaurant": "The Spice Tailor"
+    },
+    {
+      "role": "staff",
+      "email": "staff.the-spice-tailor@smartdine.test",
+      "restaurant": "The Spice Tailor"
+    },
+    {
+      "role": "owner",
+      "email": "owner.the-spice-tailor@smartdine.test",
+      "restaurant": "The Spice Tailor"
+    },
+    {
+      "role": "staff",
+      "email": "staff.nikkei-bar@smartdine.test",
+      "restaurant": "Nikkei Bar"
+    },
+    {
+      "role": "owner",
+      "email": "owner.nikkei-bar@smartdine.test",
+      "restaurant": "Nikkei Bar"
+    },
+    {
+      "role": "staff",
+      "email": "staff.trattoria-bianco@smartdine.test",
+      "restaurant": "Trattoria Bianco"
+    },
+    {
+      "role": "owner",
+      "email": "owner.trattoria-bianco@smartdine.test",
+      "restaurant": "Trattoria Bianco"
+    },
+    {
+      "role": "staff",
+      "email": "staff.green-fork@smartdine.test",
+      "restaurant": "Green Fork"
+    },
+    {
+      "role": "owner",
+      "email": "owner.green-fork@smartdine.test",
+      "restaurant": "Green Fork"
+    },
+    {
+      "role": "staff",
+      "email": "staff.chophouse@smartdine.test",
+      "restaurant": "Chophouse"
+    },
+    {
+      "role": "owner",
+      "email": "owner.chophouse@smartdine.test",
+      "restaurant": "Chophouse"
+    },
+    {
+      "role": "staff",
+      "email": "staff.seoul-grill@smartdine.test",
+      "restaurant": "Seoul Grill"
+    },
+    {
+      "role": "owner",
+      "email": "owner.seoul-grill@smartdine.test",
+      "restaurant": "Seoul Grill"
+    }
   ],
   "logs": "SmartDine running at http://127.0.0.1:4012\n"
 }

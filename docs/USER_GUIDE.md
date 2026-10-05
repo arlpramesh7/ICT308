@@ -11,12 +11,12 @@ Open PowerShell or a terminal in a suitable working folder:
 ```powershell
 git clone https://github.com/arlpramesh7/ICT308.git
 cd ICT308
-git checkout feature/SMAR-36-final-delivery
+git checkout main
 npm ci
 npm run setup
 npm start
 ```
-Until the final branch is merged, explicitly check out the branch shown above. Open http://localhost:4000. The same Express process serves the frontend and API. Do not double-click the HTML file or start a second frontend server. Stop the server with Ctrl+C.
+The release is on main; PR #2 records the earlier delivery and PR #3 the restaurant-account increment. Open http://localhost:4000. The same Express process serves the frontend and API. Do not double-click the HTML file or start a second frontend server. Stop the server with Ctrl+C.
 
 ## 4 Configuration and data
 Setup generates backend/.env with unique local signing/push keys. Do not share that file. The default port is 4000 and the default origin is http://localhost:4000. If occupied, choose an unused port and change both PORT and APP_ORIGIN before restarting. Keep HOST=127.0.0.1 for a local demonstration.
@@ -30,13 +30,24 @@ The database lives in backend/db/smartdine.sqlite. Startup creates missing table
 | Staff | staff@smartdine.test | SmartDine-Demo26! |
 | Owner | owner@smartdine.test | SmartDine-Demo26! |
 
-Staff and owner are assigned to The Spice Tailor. These published credentials are only for local demonstration. They are not real personal passwords. The local customer displays Prajwal Shrestha but is distinct from the preserved personal account. Discovery, Account and pickup-name defaults use the authenticated profile. Public registration creates customers only.
+The generic staff/owner aliases above remain assigned to The Spice Tailor. For another venue, use its exclusive account below. Every account uses the public local password SmartDine-Demo26! and displays the venue name followed by Staff or Owner.
+
+| Restaurant | Staff email | Owner email |
+|---|---|---|
+| The Spice Tailor | staff.the-spice-tailor@smartdine.test | owner.the-spice-tailor@smartdine.test |
+| Nikkei Bar | staff.nikkei-bar@smartdine.test | owner.nikkei-bar@smartdine.test |
+| Trattoria Bianco | staff.trattoria-bianco@smartdine.test | owner.trattoria-bianco@smartdine.test |
+| Green Fork | staff.green-fork@smartdine.test | owner.green-fork@smartdine.test |
+| Chophouse | staff.chophouse@smartdine.test | owner.chophouse@smartdine.test |
+| Seoul Grill | staff.seoul-grill@smartdine.test | owner.seoul-grill@smartdine.test |
+
+Each privileged account has exactly one restaurant membership. Setup creates/reconciles these through the normal seed mechanism, preserves personal data/passwords and refuses conflicting privileged roles, passwords or memberships rather than silently changing access. Provisioning is disabled in production or with DEMO_DATA=false. The local customer displays Prajwal Shrestha but is distinct from personal accounts. Discovery, Account and pickup defaults use the authenticated profile. Public registration creates customers only; no admin role exists.
 
 ## 6 Customer workflow
 ### Registration and login
 From Home, choose Register. Enter a unique name of 3–50 characters, valid email and a password of at least 10 characters and no more than 72 bytes; confirm the password and acknowledge the privacy notice. Successful registration opens Discover. No staff or owner selector is offered. Existing users choose Log in. Incorrect credentials show an error; five failures lock the account for 15 minutes. Sessions last one hour. Log out before switching roles.
 
-![Login page](screenshots/01-login.jpg)
+![Current login page](screenshots/59-release-login.jpg)
 
 ### Preferences
 Select Indian, Vegetarian, $$ and a radius of 2 km, then Save preferences. The confirmation indicates database persistence. Reloading retains the values. Any cuisine/budget and No restriction remove those preferences; vegan is a distinct restriction. Supported radius is 0.1–50 km. Venue-supplied flags do not guarantee allergy safety or prevent cross-contamination.
@@ -53,9 +64,9 @@ The named search areas use fixed coordinates, not detected GPS. Use my location 
 ### Recommendations and explanation
 Each venue shows cuisine, price band, distance, estimated straight-line walking time, rating and any currently active offer. Select Why this recommendation? to see the six contributions returned by the server. They use proximity 35, cuisine 20, dietary 15, price 10, rating 15 and promotion 5. The displayed score is rounded separately from its components. It is a match score, not a probability or guarantee of satisfaction.
 
-Select vegan and save again. Only compatible venues remain; excluded venue names are shown below the results. A no-results message is expected at an out-of-area search location. The refresh icon repeats the current search.
+Select vegan and save again. Only compatible venues remain; excluded venue names are shown below the results. Radius and dietary restrictions exclude candidates; cuisine and budget rank them and do not guarantee only exact matches. Search matches restaurant names/cuisines. No minimum-rating filter is implemented. A no-results message is expected at an out-of-area search location. The refresh icon repeats the current search.
 
-![Recommendation explanation](screenshots/06-score-breakdown.jpg)
+![Current recommendation explanation](screenshots/60-release-score.jpg)
 
 ### Restaurant pages, favourites and reviews
 Select a restaurant photograph, name or View restaurant. The dedicated page shows cuisine imagery, address, opening hours, pickup estimate, full grouped menu, prices and dietary flags. Unavailable items are labelled and have no Add to Cart control. The heart turns red and filled when saved; select it again to remove. Reloading and signing back into the same account preserve the choice. Saved restaurants on Discover filters your saved list, including venues outside the current search radius.
@@ -75,14 +86,13 @@ Browse reviews with the previous/next arrows. Your own existing review is loaded
 If prices, quantities or availability changed after checkout loaded, return to Cart, review the current total and start checkout again. A closed restaurant or unavailable item prevents ordering. Confirmation is an academic application record, not a paid purchase or a promise of fulfilment by a real restaurant.
 
 ![Cart and totals](screenshots/32-cart.jpg)
-![Order confirmation](screenshots/34-order-confirmation.jpg)
+![Verified customer order after restaurant fulfilment](screenshots/57-release-customer-completed.jpg)
 
 ### Offers and ratings
 An active promotion inside its geofence creates an in-app offer. Your offers shows venue, message, time and unread/read state. The check icon marks it read. Refreshing location within 30 minutes does not create another offer for the same venue. Browser notification permission is not needed for in-app offers.
 
 On a restaurant page, select Rating (1–5), optionally enter Review text up to 500 characters, then Save review. A later rating from the same customer updates the effective rating rather than adding another vote. Do not include personal information in comments. Opening a restaurant and saving it record engagement against the customer's latest recommendation.
 
-![Dietary filtering and in-app offer](screenshots/07-dietary-and-offer.jpg)
 
 ## 7 Staff workflow
 Log out, then log in as staff. The Menu page lists assigned venues only. Select a venue if more than one is assigned.
@@ -91,7 +101,7 @@ Choose Add item. Enter name, description, category and a price from 0 to 9999 AU
 
 The pencil icon edits an existing item. The availability checkbox enables/disables it without deleting it. The delete icon opens confirmation before permanent removal. Prefer disabling when an item may return. Recent changes records menu and promotion actions. Every server request checks both staff/owner role and venue assignment; changing an ID does not grant access.
 
-![Staff menu](screenshots/11-staff-dashboard.jpg)
+![Restaurant-scoped Green Fork staff menu](screenshots/52-green-fork-staff.jpg)
 ![Add menu item](screenshots/12-add-menu-item.jpg)
 
 Open the Promotion tab. Enter offer text, local start/end dates and Enable promotion. The end must follow the start; an enabled offer needs both dates and nonempty text. Save promotion persists it. Future and expired offers do not receive a recommendation boost or trigger notifications.
@@ -106,7 +116,7 @@ Log out and sign in as owner. Analytics displays the assigned restaurant's actua
 
 An impression is a venue surfaced to a customer, deduplicated for 10 minutes. A view is an opened/interested recommendation, not a verified physical visit. Engagement equals viewed impressions divided by impressions. A clean database initially shows zero activity and no rating. Perform the customer workflow first to generate genuine demonstration events. Manage menu opens the same protected menu interface. Owners also have the assigned-restaurant Orders screen and can advance pickup status.
 
-![Owner analytics](screenshots/14-owner-analytics.jpg)
+![Restaurant-scoped Green Fork owner analytics](screenshots/53-green-fork-owner.jpg)
 
 ## 9 Account and privacy
 Account shows the authenticated profile. Customers may disable nearby promotional offers; doing so also removes stored push subscriptions. Export my data downloads JSON containing the customer's own profile, preferences, favourites, cart, orders, ratings and activity without password hashes, retry keys or private keys.

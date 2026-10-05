@@ -8,14 +8,14 @@ From a terminal:
 ```powershell
 git clone https://github.com/arlpramesh7/ICT308.git
 cd ICT308
-git checkout feature/SMAR-36-final-delivery
+git checkout main
 npm ci
 npm run setup
 npm start
 ```
-Open http://localhost:4000. Use the final-delivery branch until it has actually been merged into main. Do not separately serve the frontend or open HTML with file://.
+Open http://localhost:4000. The final release uses main. Do not separately serve the frontend or open HTML with file://.
 
-Setup creates backend/.env only if absent, generates independent JWT/VAPID secrets, initialises schema/migrations and adds the three demo accounts only if absent. Running setup twice does not reset existing passwords, menus, reviews or history. The default database is backend/db/smartdine.sqlite. All restaurants and offers are demonstration fixtures.
+Setup creates backend/.env only if absent, generates independent JWT/VAPID secrets, initialises schema/migrations and provisions fifteen active local accounts: one customer, twelve venue-specific staff/owners and two compatible pilot aliases. See README and USER_GUIDE for every email; password SmartDine-Demo26! is local-only. Display names use the actual restaurant plus Staff/Owner. Repeat setup preserves IDs/passwords/data, repairs missing intended membership and rejects conflicting privileged credentials, roles or other memberships atomically. Production and DEMO_DATA=false prohibit account seeding. The default database is backend/db/smartdine.sqlite. All restaurants and offers are fictional fixtures.
 
 ## Configuration
 - HOST=127.0.0.1 binds only to this machine.
@@ -35,7 +35,7 @@ npm audit --prefix backend
 ```
 The performance command uses its own in-memory database and raised test rate limit; it does not add 1000 venues to the demonstration database. Results are written to docs/evidence/performance.json.
 
-Clean-install evidence: docs/evidence/clean-install.json. A separate clone passed locked installation, first and repeat setup, actual server startup on port 4011, HTML/health HTTP 200 and all three role logins. The test server was stopped afterwards. Local screenshot evidence uses port 4000.
+Current clean-install evidence: docs/evidence/clean-install-final.json. A separate release clone passed npm ci, first and repeat setup, actual startup on port 4012, HTML/health HTTP 200 and all fifteen logins. Each privileged account has one correct assignment and other-venue access returns 403. Repeat setup retained 21 users (15 active accounts plus six inactive sample-review authors), six restaurants, fourteen memberships and 36 reviews. The verification server was stopped. Earlier clean-install.json is historical; live screenshots use port 4000.
 
 ## Backup and release
 Stop the process before copying the SQLite database and related WAL/SHM files. Store backups privately, outside the repository. Test a restore on a copy, never overwrite a live assessment database without a backup. Keep .env private and retain its signing keys while sessions/subscriptions need to remain valid.

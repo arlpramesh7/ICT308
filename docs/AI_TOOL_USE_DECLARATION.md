@@ -6,4 +6,6 @@ Scope: substantial assistance was used to inspect the existing project and asses
 
 The generated meal image is an illustration, not a photograph of a real partner venue. Application screenshots were captured from the running software. Test outputs and GitHub/Jira activity correspond to actual actions; automated checks are not human acceptance testing. No human review, participant signature, contribution percentage or historic activity has been invented.
 
+The final release also used assistance for guarded restaurant-account seeding, preservation/authorization tests, real browser role and pickup checks, factual document synchronization, clean-install verification and permitted Git/Jira release actions. An initial failing CI fixture result was retained and corrected rather than concealed. Human UAT and independent review remain unexecuted.
+
 The team remains responsible for reviewing the complete submission, checking references and student details, conducting human UAT, completing its own academic integrity declaration and being able to explain and justify every implemented feature. Prior work is retained and identified as the ICT307 design and ICT308 Assessment 1 baseline. The team should confirm that this extent of assistance complies with the lecturer's assessment instructions before submission.
